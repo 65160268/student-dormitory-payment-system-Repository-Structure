@@ -1,0 +1,103 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.3.2">
+  <diagram name="หน้า-1" id="whXTvGZ2VdX6c7OhV-zA">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="DwdYJdcXNcIuZ0IH-Lau-0" />
+        <mxCell id="DwdYJdcXNcIuZ0IH-Lau-1" parent="DwdYJdcXNcIuZ0IH-Lau-0" />
+        <mxCell id="WNF_xc78lXQepSqeOrj--0" parent="DwdYJdcXNcIuZ0IH-Lau-1" style="swimlane;" value="ผู้ใช้งาน" vertex="1">
+          <mxGeometry height="800" width="290" x="110" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--1" edge="1" parent="WNF_xc78lXQepSqeOrj--0" source="WNF_xc78lXQepSqeOrj--2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="WNF_xc78lXQepSqeOrj--3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--2" parent="WNF_xc78lXQepSqeOrj--0" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="97.5" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--3" parent="WNF_xc78lXQepSqeOrj--0" style="rounded=1;whiteSpace=wrap;html=1;" value="เปิดหน้าเว็บไซต์&amp;nbsp;" vertex="1">
+          <mxGeometry height="55" width="110" x="67.5" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-20" edge="1" parent="WNF_xc78lXQepSqeOrj--0" source="WNF_xc78lXQepSqeOrj--4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="WNF_xc78lXQepSqeOrj--6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--4" parent="WNF_xc78lXQepSqeOrj--0" style="rounded=1;whiteSpace=wrap;html=1;" value="กรอกรหัสนิสิต เพื่อทำการเข้าสู่ระบบ&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="135" x="60" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--6" parent="WNF_xc78lXQepSqeOrj--0" style="rounded=1;whiteSpace=wrap;html=1;" value="กดปุ่ม &quot;เข้าสู่ระบบ&quot;" vertex="1">
+          <mxGeometry height="60" width="135" x="60" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--15" parent="DwdYJdcXNcIuZ0IH-Lau-1" style="swimlane;" value="ระบบ" vertex="1">
+          <mxGeometry height="800" width="250" x="400" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--16" parent="WNF_xc78lXQepSqeOrj--15" style="rounded=1;whiteSpace=wrap;html=1;" value="เเสดงหน้าเข้าสู่ระบบ" vertex="1">
+          <mxGeometry height="55" width="110" x="72.5" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--19" edge="1" parent="WNF_xc78lXQepSqeOrj--15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="101" y="875" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--20" edge="1" parent="WNF_xc78lXQepSqeOrj--15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="101" y="1050" as="sourcePoint" />
+            <mxPoint x="101" y="1050" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-14" edge="1" parent="WNF_xc78lXQepSqeOrj--15" source="WNF_xc78lXQepSqeOrj--21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="FzCTBG_aKfCZ3b-hoj4O-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--21" parent="WNF_xc78lXQepSqeOrj--15" style="rounded=1;whiteSpace=wrap;html=1;" value="ระบบตรวจสอบข้อมูล" vertex="1">
+          <mxGeometry height="60" width="135" x="57.5" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--23" parent="WNF_xc78lXQepSqeOrj--15" style="ellipse;shape=doubleEllipse;whiteSpace=wrap;html=1;aspect=fixed;direction=south;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="95" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-16" edge="1" parent="WNF_xc78lXQepSqeOrj--15" source="FzCTBG_aKfCZ3b-hoj4O-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="FzCTBG_aKfCZ3b-hoj4O-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-22" connectable="0" parent="FzCTBG_aKfCZ3b-hoj4O-16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="รหัสผ่านถูกต้อง" vertex="1">
+          <mxGeometry relative="1" x="0.1918" y="-1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-3" parent="WNF_xc78lXQepSqeOrj--15" style="rhombus;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="80" width="80" x="85" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-17" edge="1" parent="WNF_xc78lXQepSqeOrj--15" source="FzCTBG_aKfCZ3b-hoj4O-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="WNF_xc78lXQepSqeOrj--23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-4" parent="WNF_xc78lXQepSqeOrj--15" style="rounded=1;whiteSpace=wrap;html=1;" value="เเสดงหน้า Dashboard" vertex="1">
+          <mxGeometry height="60" width="135" x="57.5" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="WNF_xc78lXQepSqeOrj--26" edge="1" parent="DwdYJdcXNcIuZ0IH-Lau-1" source="WNF_xc78lXQepSqeOrj--3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="WNF_xc78lXQepSqeOrj--16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-13" edge="1" parent="DwdYJdcXNcIuZ0IH-Lau-1" source="WNF_xc78lXQepSqeOrj--16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="WNF_xc78lXQepSqeOrj--4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="528" y="230" />
+              <mxPoint x="238" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-15" edge="1" parent="DwdYJdcXNcIuZ0IH-Lau-1" source="FzCTBG_aKfCZ3b-hoj4O-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="WNF_xc78lXQepSqeOrj--4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="520" />
+              <mxPoint x="140" y="290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-21" connectable="0" parent="FzCTBG_aKfCZ3b-hoj4O-15" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="รหัสผ่านผิดไม่ถูกต้อง" vertex="1">
+          <mxGeometry relative="1" x="-0.2894" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FzCTBG_aKfCZ3b-hoj4O-19" edge="1" parent="DwdYJdcXNcIuZ0IH-Lau-1" source="WNF_xc78lXQepSqeOrj--6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.019;entryY=0.417;entryDx=0;entryDy=0;entryPerimeter=0;" target="WNF_xc78lXQepSqeOrj--21">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="449.9999999999998" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

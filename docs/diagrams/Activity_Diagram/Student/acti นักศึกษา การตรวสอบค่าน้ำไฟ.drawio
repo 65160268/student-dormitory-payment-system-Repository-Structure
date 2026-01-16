@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.3.2">
+  <diagram name="หน้า-1" id="gmZcN9JYpYl8-MKu8ASo">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-1" parent="1" style="swimlane;" value="ผู้ใช้งาน" vertex="1">
+          <mxGeometry height="800" width="350" x="50" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-2" edge="1" parent="ZOAs-tedIevbAH_-zlsv-1" source="ZOAs-tedIevbAH_-zlsv-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ZOAs-tedIevbAH_-zlsv-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-3" parent="ZOAs-tedIevbAH_-zlsv-1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="50" width="50" x="97.5" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-4" parent="ZOAs-tedIevbAH_-zlsv-1" style="rounded=1;whiteSpace=wrap;html=1;" value="เปิดหน้าเว็บไซต์&amp;nbsp;" vertex="1">
+          <mxGeometry height="55" width="110" x="67.5" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-36" edge="1" parent="ZOAs-tedIevbAH_-zlsv-1" source="ZOAs-tedIevbAH_-zlsv-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-6" parent="ZOAs-tedIevbAH_-zlsv-1" style="rounded=1;whiteSpace=wrap;html=1;" value="นักศึกษาอยู่ที่หน้า &quot;ประวัติการชำระเงิน&quot;" vertex="1">
+          <mxGeometry height="60" width="135" x="30" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-7" parent="ZOAs-tedIevbAH_-zlsv-1" style="rounded=1;whiteSpace=wrap;html=1;" value="กดปุ่ม &quot;ดาวน์โหลดใบเสร็จ&quot;" vertex="1">
+          <mxGeometry height="60" width="135" x="30" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-38" edge="1" parent="ZOAs-tedIevbAH_-zlsv-1" source="ZOAs-tedIevbAH_-zlsv-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-31" parent="ZOAs-tedIevbAH_-zlsv-1" style="rounded=1;whiteSpace=wrap;html=1;" value="เลือกรายการที่ชำระเงินเสร็จ&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="135" x="30" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-32" parent="ZOAs-tedIevbAH_-zlsv-1" style="rounded=1;whiteSpace=wrap;html=1;" value="ดูหน้า Dashboard" vertex="1">
+          <mxGeometry height="60" width="135" x="190" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-10" parent="1" style="swimlane;" value="ระบบ" vertex="1">
+          <mxGeometry height="800" width="300" x="400" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-11" parent="ZOAs-tedIevbAH_-zlsv-10" style="rounded=1;whiteSpace=wrap;html=1;" value="เเสดงหน้าเข้าสู่ระบบ" vertex="1">
+          <mxGeometry height="55" width="110" x="72.5" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-12" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="101" y="875" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-13" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="101" y="1050" as="sourcePoint" />
+            <mxPoint x="101" y="1050" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-41" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" source="ZOAs-tedIevbAH_-zlsv-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-15" parent="ZOAs-tedIevbAH_-zlsv-10" style="rounded=1;whiteSpace=wrap;html=1;" value="ระบบตรวจสอบข้อมูล" vertex="1">
+          <mxGeometry height="60" width="135" x="85" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-16" parent="ZOAs-tedIevbAH_-zlsv-10" style="ellipse;shape=doubleEllipse;whiteSpace=wrap;html=1;aspect=fixed;direction=south;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="122.5" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-17" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" source="ZOAs-tedIevbAH_-zlsv-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;" target="ZOAs-tedIevbAH_-zlsv-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-18" parent="ZOAs-tedIevbAH_-zlsv-10" style="rounded=1;whiteSpace=wrap;html=1;" value="ระบบสร้างไฟล์ PDF ของใบรับรองเงินที่มีข้อมูลครบถ้วน&amp;nbsp;" vertex="1">
+          <mxGeometry height="60" width="135" x="10" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-22" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" source="ZOAs-tedIevbAH_-zlsv-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="ZOAs-tedIevbAH_-zlsv-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-23" parent="ZOAs-tedIevbAH_-zlsv-10" style="rounded=1;whiteSpace=wrap;html=1;" value="ระบบต้องเเสดงเเยกยอดต่างๆให้เห็นอย่างชัดเจน" vertex="1">
+          <mxGeometry height="60" width="135" x="157.5" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-42" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" source="ZOAs-tedIevbAH_-zlsv-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-18">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="78" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-45" connectable="0" parent="ZOAs-tedIevbAH_-zlsv-42" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="ดาวน์โหลด" vertex="1">
+          <mxGeometry relative="1" x="-0.4301" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-35" parent="ZOAs-tedIevbAH_-zlsv-10" style="rhombus;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="122.5" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-43" edge="1" parent="ZOAs-tedIevbAH_-zlsv-10" source="ZOAs-tedIevbAH_-zlsv-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.623;entryY=-0.014;entryDx=0;entryDy=0;entryPerimeter=0;" target="ZOAs-tedIevbAH_-zlsv-23">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="242" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-44" connectable="0" parent="ZOAs-tedIevbAH_-zlsv-43" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Dashboard" vertex="1">
+          <mxGeometry relative="1" x="-0.4822" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-26" edge="1" parent="1" source="ZOAs-tedIevbAH_-zlsv-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-28" edge="1" parent="1" source="ZOAs-tedIevbAH_-zlsv-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.574;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=12;startSize=8;endSize=8;" target="ZOAs-tedIevbAH_-zlsv-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="310" />
+              <mxPoint x="247" y="310" />
+              <mxPoint x="247" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-37" edge="1" parent="1" source="ZOAs-tedIevbAH_-zlsv-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-32">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="528" y="340" />
+              <mxPoint x="308" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-39" edge="1" parent="1" source="ZOAs-tedIevbAH_-zlsv-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZOAs-tedIevbAH_-zlsv-15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="148" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ZOAs-tedIevbAH_-zlsv-40" edge="1" parent="1" source="ZOAs-tedIevbAH_-zlsv-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ZOAs-tedIevbAH_-zlsv-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
