@@ -47,7 +47,6 @@
 
 ## 📂 โครงสร้างพื้นที่เก็บข้อมูล (Repository Structure)
 
-
 ```
 📂 student-dormitory-payment-system
  ├── 📄 README.md (ภาพรวมโครงการ)
@@ -58,20 +57,20 @@
       ├── 📄 D1_UserStories.md (ความต้องการผู้ใช้)
       └── 📂 diagrams
            ├── 📂 Use_Case_Diagram
-           │    └──🖼️ use_case_diagram.png
+           │    └── 🖼️ use_case_diagram.png
            ├── 📂 Activity_Diagram
            │    ├── 📂 Admin
-           │    │    └──🖼️ activity_diagram.png
+           │    │    └── 🖼️ activity_diagram.png
            │    ├── 📂 Finance
-	   │    │    └──🖼️ activity_diagram.png
+           │    │    └── 🖼️ activity_diagram.png
            │    ├── 📂 Manager
-	   │    │    └──🖼️ activity_diagram.png
+           │    │    └── 🖼️ activity_diagram.png
            │    ├── 📂 Staff
-	   │    │    └──🖼️ activity_diagram.png
+           │    │    └── 🖼️ activity_diagram.png
            │    └── 📂 Student
-	   │	      └──🖼️ activity_diagram.png
+           │         └── 🖼️ activity_diagram.png
            └── 📂 Er_Diagram
-		└── 🖼️ er_diagram.png
+                └── 🖼️ er_diagram.png
 
 ```
 
