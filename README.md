@@ -108,7 +108,7 @@
 
 ---
 
-## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack) !!ในอนาคนอาจะมีการปรับแต่งเทคโนโลยีที่ใช้!!
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack) 
 
 * **Frontend:** React.js / Tailwind CSS 
 * **Backend:** Node.js / Express 
