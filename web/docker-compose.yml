@@ -1,0 +1,14 @@
+services:
+  web:
+    container_name: dormpay-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3069:3000"
+    restart: unless-stopped
