@@ -1,0 +1,29 @@
+name: Coverage
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests/docs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tests/docs/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Run tests with coverage (if available)
+        run: npm test -- --coverage --if-present
