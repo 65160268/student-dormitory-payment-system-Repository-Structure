@@ -1,0 +1,24 @@
+ชื่อทีม,สมาชิก 1,สมาชิก 2,สมาชิก 3,สมาชิก 4,สมาชิก 5,สมาชิก 6
+JR,65160381 นายปริญญา ตรีชาญกุล (Product Owner),65160268 นายสรวิชญ์ ศรีสุข (Scrum Artifacts / Scrum Master),65160255 นายนัฐดติย์ คล้ายสุวรรณณ์ (Developers),65160132 นายอำนาจ ชากำนั่น (Developers),65160267 นายวีรพัฒน์ ตะเภาทอง (Quality Assurance / Tester),65160022 นายฎดล ทิขาว (Quality Assurance / Tester)
+
+รหัสทดสอบ,โมดูล,คำอธิบาย,ข้อมูลนำเข้า,ผลลัพธ์ที่คาดหวัง,สถานะ,หมายเหตุ
+TC-001,Auth,Login without password,username only,400 VALIDATION_ERROR,PASS,
+TC-002,Auth,Login with unknown user,username/password,401 INVALID_CREDENTIALS,PASS,
+TC-003,Auth,Login success,valid username/password,200 + token,PASS,
+TC-004,Room,List rooms without token,none,401 UNAUTHORIZED,PASS,
+TC-005,Room,List rooms with finance role,valid token,200 + room list,PASS,
+TC-006,Room,Create room by finance role,finance token,403 FORBIDDEN,PASS,
+TC-007,Room,Create room invalid payload,missing typeId,400 VALIDATION_ERROR,PASS,
+TC-008,Room,Update room success,valid payload,200 + updated data,PASS,
+TC-009,Invoice,List invoices success,admin token,200 + invoice list,PASS,
+TC-010,Invoice,Create invoice missing dueDate,roomId only,400 VALIDATION_ERROR,PASS,
+TC-011,Invoice,Create invoice success,roomId + dueDate,201 + calculated totals,PASS,
+TC-012,Invoice,Create invoice by staff role,staff token,403 FORBIDDEN,PASS,
+TC-013,Payment,List payments by staff,staff token,403 FORBIDDEN,PASS,
+TC-014,Payment,List payments by finance,finance token,200 + payment list,PASS,
+TC-015,Payment,Create payment missing paymentDate,partial payload,400 VALIDATION_ERROR,PASS,
+TC-016,Payment,Create payment success,valid payload,201 + paymentId,PASS,
+TC-017,Payment,Verify payment invalid status,verifyStatus=waiting,400 VALIDATION_ERROR,PASS,
+TC-018,Meter,List meter readings for finance,finance token,200 + reading list,PASS,
+TC-019,Meter,Create meter reading by finance,finance token,403 FORBIDDEN,PASS,
+TC-020,Meter,Create meter reading success,valid staff payload,201 + readingId,PASS,
