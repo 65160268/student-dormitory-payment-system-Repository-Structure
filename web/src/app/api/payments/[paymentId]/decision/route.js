@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
-import { decidePayment } from "@/lib/data-store";
+import { decidePaymentData } from "@/lib/data-access";
 
 export async function POST(request, { params }) {
   const token = request.cookies.get(getSessionCookieName())?.value;
@@ -10,7 +10,7 @@ export async function POST(request, { params }) {
   if (!user) {
     return NextResponse.json({ message: "unauthorized" }, { status: 401 });
   }
-  if (user.role !== "finance") {
+  if (!["finance", "admin"].includes(user.role)) {
     return NextResponse.json({ message: "forbidden" }, { status: 403 });
   }
 
@@ -22,8 +22,20 @@ export async function POST(request, { params }) {
     );
   }
 
+  if (body.status === "rejected" && !String(body.rejectReason ?? "").trim()) {
+    return NextResponse.json(
+      { message: "reject reason is required" },
+      { status: 400 },
+    );
+  }
+
   const { paymentId } = params;
-  const payment = decidePayment(paymentId, body.status, user.id);
+  const payment = await decidePaymentData(
+    paymentId,
+    body.status,
+    user.id,
+    String(body.rejectReason ?? "").trim(),
+  );
   if (!payment) {
     return NextResponse.json({ message: "payment not found" }, { status: 404 });
   }

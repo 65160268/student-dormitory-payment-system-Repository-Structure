@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/app/theme-toggle";
 
 const demoAccounts = [
   { role: "Student", username: "65160381", password: "pass1234" },
@@ -51,11 +52,15 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md border border-border/70 bg-card/90">
-      <CardHeader>
-        <CardTitle className="text-2xl">Sign in to DormPayment</CardTitle>
-        <CardDescription>Use your role account to access your own workspace.</CardDescription>
-      </CardHeader>
+    <>
+      <div className="flex justify-end mb-4 w-full max-w-md mx-auto">
+        <ThemeToggle />
+      </div>
+      <Card className="mx-auto w-full max-w-md border border-border/70 bg-card/90">
+        <CardHeader>
+          <CardTitle className="text-2xl">Sign in to DormPayment</CardTitle>
+          <CardDescription>Use your role account to access your own workspace.</CardDescription>
+        </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-1.5">
@@ -103,5 +108,6 @@ export function LoginForm() {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }

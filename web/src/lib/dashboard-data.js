@@ -14,7 +14,7 @@ export const kpiCards = [
     tone: "danger",
   },
   {
-    title: "Paid This Month",
+    title: "Amount Due",
     value: "THB 428,200",
     change: "82.4% collection rate",
     tone: "good",
@@ -94,7 +94,7 @@ export const rolePanels = {
     ],
     activity: [
       ["Mar 2026", "Collection", "82.4%", "+1.8%"],
-      ["Q1 2026", "Outstanding", "THB 522,900", "-6.2%"],
+      ["Q1 2026", "Amount Due", "THB 522,900", "-6.2%"],
       ["Top Risk", "Tower B", "18 rooms", "Investigate"],
     ],
   },

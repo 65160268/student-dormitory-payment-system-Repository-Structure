@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
-import { getDashboardByRole } from "@/lib/data-store";
+import { getDashboardData } from "@/lib/data-access";
 
 export async function GET(request) {
   const token = request.cookies.get(getSessionCookieName())?.value;
@@ -16,6 +16,6 @@ export async function GET(request) {
     return NextResponse.json({ message: "forbidden" }, { status: 403 });
   }
 
-  const data = getDashboardByRole(role, user);
+  const data = await getDashboardData(role, user);
   return NextResponse.json({ role, data });
 }

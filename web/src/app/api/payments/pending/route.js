@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
-import { listPendingPayments } from "@/lib/data-store";
+import { listPendingPaymentsData } from "@/lib/data-access";
 
 export async function GET(request) {
   const token = request.cookies.get(getSessionCookieName())?.value;
@@ -10,9 +10,9 @@ export async function GET(request) {
   if (!user) {
     return NextResponse.json({ message: "unauthorized" }, { status: 401 });
   }
-  if (user.role !== "finance") {
+  if (!["finance", "admin"].includes(user.role)) {
     return NextResponse.json({ message: "forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ items: listPendingPayments() });
+  return NextResponse.json({ items: await listPendingPaymentsData() });
 }

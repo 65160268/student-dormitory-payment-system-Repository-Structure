@@ -2,17 +2,18 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 import { users as fallbackUsers } from "@/lib/data-store";
+import { getCurrentRoomIdByStudentId } from "@/lib/db/dorm-repository";
 import { getDb, isDatabaseConfigured } from "@/lib/db/client";
 import { usersTable } from "@/lib/db/schema";
 
-function mapDbUser(row) {
+function mapDbUser(row, roomId = null) {
   return {
     id: row.id,
     username: row.username,
     password: row.passwordHash,
-    name: row.fullName,
+    name: row.name,
     role: row.role,
-    roomId: row.roomId ?? null,
+    roomId,
   };
 }
 
@@ -50,7 +51,8 @@ async function findFromDatabase(username, password) {
     return null;
   }
 
-  return mapDbUser(user);
+  const roomId = user.role === "student" ? await getCurrentRoomIdByStudentId(user.id) : null;
+  return mapDbUser(user, roomId);
 }
 
 function findFromFallback(username, password) {
