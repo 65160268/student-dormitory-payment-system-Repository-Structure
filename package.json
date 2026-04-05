@@ -1,12 +1,11 @@
 {
-  "name": "hotel-management-api",
+  "name": "dormitory-payment-system",
   "version": "1.0.0",
-  "description": "Dormitory/hotel management starter for Week 7 deliverables",
+  "description": "Backend API for dormitory payment system",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "lint": "eslint .",
     "test": "jest --runInBand",
     "test:coverage": "jest --coverage --runInBand"
   },
@@ -18,9 +17,8 @@
     "mysql2": "^3.20.0"
   },
   "devDependencies": {
-    "eslint": "^9.20.0",
     "jest": "^30.1.3",
-    "nodemon": "^3.1.7",
-    "supertest": "^7.1.4"
+    "supertest": "^7.1.4",
+    "nodemon": "^3.1.7"
   }
 }
