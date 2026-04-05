@@ -1,5 +1,6 @@
 import { Noto_Sans_Thai, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const bodyFont = Noto_Sans_Thai({
   variable: "--font-noto-thai",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <Toaster />
       </body>
     </html>
   );

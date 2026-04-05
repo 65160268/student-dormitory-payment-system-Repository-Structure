@@ -1,23 +1,27 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getSessionCookieName, getUserByToken } from "@/lib/auth";
 import { listAuditLogs } from "@/lib/data-store";
 
-function getSessionUser() {
-  const store = cookies();
-  const raw = store.get("dorm_session")?.value;
-  if (!raw) return null;
-  try {
-    return JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
-  } catch {
-    return null;
+function getAdminOrManagerUser(request) {
+  const token = request.cookies.get(getSessionCookieName())?.value;
+  const user = getUserByToken(token);
+
+  if (!user) {
+    return { error: NextResponse.json({ message: "unauthorized" }, { status: 401 }) };
   }
+
+  if (!["admin", "manager"].includes(user.role)) {
+    return { error: NextResponse.json({ message: "forbidden" }, { status: 403 }) };
+  }
+
+  return { user };
 }
 
 // GET /api/admin/audit-logs
-export async function GET() {
-  const session = getSessionUser();
-  if (!session || !["admin", "manager"].includes(session.role)) {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+export async function GET(request) {
+  const auth = getAdminOrManagerUser(request);
+  if (auth.error) {
+    return auth.error;
   }
 
   const logs = listAuditLogs(100);

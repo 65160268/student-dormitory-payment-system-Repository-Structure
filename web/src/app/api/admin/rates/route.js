@@ -1,30 +1,37 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getSessionCookieName, getUserByToken } from "@/lib/auth";
 import { getRoomRates, updateRoomRates, addAuditLog } from "@/lib/data-store";
 
-function getSessionUser() {
-  const store = cookies();
-  const raw = store.get("dorm_session")?.value;
-  if (!raw) return null;
-  try {
-    return JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
-  } catch {
-    return null;
+function getAdminUser(request) {
+  const token = request.cookies.get(getSessionCookieName())?.value;
+  const user = getUserByToken(token);
+
+  if (!user) {
+    return { error: NextResponse.json({ message: "unauthorized" }, { status: 401 }) };
   }
+
+  if (user.role !== "admin") {
+    return { error: NextResponse.json({ message: "forbidden" }, { status: 403 }) };
+  }
+
+  return { user };
 }
 
 // GET /api/admin/rates
-export async function GET() {
-  const session = getSessionUser();
-  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+export async function GET(request) {
+  const auth = getAdminUser(request);
+  if (auth.error) {
+    return auth.error;
+  }
+
   return NextResponse.json({ rates: getRoomRates() });
 }
 
 // POST /api/admin/rates
 export async function POST(request) {
-  const session = getSessionUser();
-  if (!session || session.role !== "admin") {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+  const auth = getAdminUser(request);
+  if (auth.error) {
+    return auth.error;
   }
 
   const { waterPerUnit, electricPerUnit } = await request.json();
@@ -36,7 +43,7 @@ export async function POST(request) {
   }
 
   const rates = updateRoomRates(waterPerUnit, electricPerUnit);
-  addAuditLog(session.id, "update_rates", "rate", "1",
+  addAuditLog(auth.user.id, "update_rates", "rate", "1",
     `อัปเดตอัตราค่าน้ำ=${waterPerUnit}, ค่าไฟ=${electricPerUnit}`);
 
   return NextResponse.json({ rates });

@@ -39,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 import { ThemeToggle } from "@/components/app/theme-toggle";
 
@@ -160,10 +161,15 @@ function formatDate(value) {
 }
 
 async function parseApiResponse(response) {
-  const data = await response.json();
+  const contentType = response.headers.get("content-type") ?? "";
+  const data = contentType.includes("application/json")
+    ? await response.json()
+    : { message: await response.text() };
+
   if (!response.ok) {
-    throw new Error(data.message || "Request failed");
+    throw new Error(data.message || `Request failed (${response.status})`);
   }
+
   return data;
 }
 
@@ -248,6 +254,18 @@ export function PortalClient({ user, dashboardData }) {
 
   function closeConfirmDialog() {
     setConfirmDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
+  }
+
+  function showSuccess(messageText) {
+    setMessage(messageText);
+    setError("");
+    toast.success(messageText);
+  }
+
+  function showError(messageText) {
+    setError(messageText);
+    setMessage("");
+    toast.error(messageText);
   }
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
@@ -806,7 +824,7 @@ export function PortalClient({ user, dashboardData }) {
   }
 
   async function refreshDashboard() {
-    const response = await fetch(`/api/dashboard?role=${user.role}`);
+    const response = await fetch(`/api/dashboard?role=${user.role}`, { cache: "no-store" });
     const payload = await parseApiResponse(response);
     setData(payload.data);
   }
@@ -817,8 +835,8 @@ export function PortalClient({ user, dashboardData }) {
     }
 
     const [usersResponse, roomsResponse] = await Promise.all([
-      fetch("/api/admin/users"),
-      fetch("/api/admin/rooms"),
+      fetch("/api/admin/users", { cache: "no-store" }),
+      fetch("/api/admin/rooms", { cache: "no-store" }),
     ]);
 
     const usersPayload = await parseApiResponse(usersResponse);
@@ -840,7 +858,7 @@ export function PortalClient({ user, dashboardData }) {
       await refreshDashboard();
       await refreshAdminManagementData();
     } catch (requestError) {
-      setError(requestError.message);
+      showError(requestError.message || "Request failed");
     } finally {
       setBusy(false);
     }
@@ -1017,7 +1035,7 @@ export function PortalClient({ user, dashboardData }) {
       });
 
       await parseApiResponse(response);
-      setMessage(`Created user ${adminUsername} (${adminRole}).`);
+      showSuccess(`Created user ${adminUsername} (${adminRole}).`);
       setAdminName("");
       setAdminUsername("");
       setAdminPassword("");
@@ -1041,18 +1059,18 @@ export function PortalClient({ user, dashboardData }) {
       });
 
       const payload = await parseApiResponse(response);
-      setMessage(`Assigned ${payload.assignment.studentName} to room ${payload.assignment.roomId}.`);
+      showSuccess(`Assigned ${payload.assignment.studentName} to room ${payload.assignment.roomId}.`);
     });
   }
 
   async function moveOutSelectedStudentByAdmin() {
     if (!selectedAdminStudent) {
-      setError("Please select a student first.");
+      showError("Please select a student first.");
       return;
     }
 
     if (!selectedAdminStudent.roomId) {
-      setError("This student is not currently assigned to any room.");
+      showError("This student is not currently assigned to any room.");
       return;
     }
 
@@ -1067,7 +1085,7 @@ export function PortalClient({ user, dashboardData }) {
             body: JSON.stringify({ studentId: selectedAdminStudent.id }),
           });
           const payload = await parseApiResponse(response);
-          setMessage(
+          showSuccess(
             `${payload.movedOut.studentName} moved out from room ${payload.movedOut.previousRoomId}.`,
           );
         });
@@ -1077,17 +1095,17 @@ export function PortalClient({ user, dashboardData }) {
 
   async function deleteSelectedStudentByAdmin() {
     if (!selectedAdminStudent) {
-      setError("Please select a student first.");
+      showError("Please select a student first.");
       return;
     }
 
     if (selectedAdminStudent.roomId) {
-      setError("Student must move out before deletion.");
+      showError("Student must move out before deletion.");
       return;
     }
 
     if (!selectedAdminStudent.checkOutDate) {
-      setError("Move-out date is required before deleting student.");
+      showError("Move-out date is required before deleting student.");
       return;
     }
 
@@ -1102,7 +1120,7 @@ export function PortalClient({ user, dashboardData }) {
             body: JSON.stringify({ studentId: selectedAdminStudent.id }),
           });
           const payload = await parseApiResponse(response);
-          setMessage(`Deleted student ${payload.deleted.name}.`);
+          showSuccess(`Deleted student ${payload.deleted.name}.`);
         });
       },
     );
@@ -1182,7 +1200,7 @@ export function PortalClient({ user, dashboardData }) {
 
   async function saveRates() {
     if (!rateWater || !rateElectric) {
-      setError("กรุณากรอกอัตราค่าน้ำและค่าไฟ");
+      showError("กรุณากรอกอัตราค่าน้ำและค่าไฟ");
       return;
     }
     await runAction(async () => {
@@ -1195,15 +1213,15 @@ export function PortalClient({ user, dashboardData }) {
         }),
       });
       await parseApiResponse(res);
-      const updated = await fetch("/api/admin/audit-logs").then((r) => r.json());
+      const updated = await fetch("/api/admin/audit-logs", { cache: "no-store" }).then((r) => r.json());
       setAdminAuditLogs(updated.logs ?? []);
-      setMessage("บันทึกอัตราค่าน้ำ/ไฟเรียบร้อย");
+      showSuccess("บันทึกอัตราค่าน้ำ/ไฟเรียบร้อย");
     });
   }
 
   async function restoreRemovedStudentByAdmin() {
     if (!selectedRemovedStudent) {
-      setError("Please select a deleted student from archive.");
+      showError("Please select a deleted student from archive.");
       return;
     }
 
@@ -1218,7 +1236,7 @@ export function PortalClient({ user, dashboardData }) {
             body: JSON.stringify({ studentId: selectedRemovedStudent.id }),
           });
           const payload = await parseApiResponse(response);
-          setMessage(`Restored student ${payload.restored.name}.`);
+          showSuccess(`Restored student ${payload.restored.name}.`);
         });
       },
     );
@@ -1571,7 +1589,6 @@ export function PortalClient({ user, dashboardData }) {
         >
           <CardHeader>
             <CardTitle style={{ color: meta.color }}>Role Actions</CardTitle>
-            <CardDescription>Action panel calls protected API endpoints.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {user.role === "student" && (
