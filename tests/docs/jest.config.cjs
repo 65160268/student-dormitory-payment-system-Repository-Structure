@@ -1,7 +1,10 @@
 module.exports = {
   testEnvironment: "node",
-  testMatch: ["**/__tests__/**/*.test.js", "**/*.test.js"],
+  coverageProvider: "v8",
+  roots: ["<rootDir>/tests", "<rootDir>/src"],
+  testMatch: ["<rootDir>/tests/**/*.test.js"],
   testPathIgnorePatterns: ["/node_modules/", "/coverage/"],
+  modulePathIgnorePatterns: ["<rootDir>/web/.next/"],
   collectCoverageFrom: [
     "src/**/*.js",
     "!src/server.js",
@@ -18,7 +21,7 @@ module.exports = {
   },
   clearMocks: true,
   passWithNoTests: true,
-  rootDir: "../",
+  rootDir: "../../",
   testTimeout: 10000,
-  moduleDirectories: ["node_modules", "docs/node_modules"],
+  moduleDirectories: ["node_modules", "<rootDir>/tests/docs/node_modules"],
 };
