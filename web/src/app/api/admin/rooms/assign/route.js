@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
+import { isDatabaseConfigured } from "@/lib/db/client";
+import { assignStudentToRoomInDb } from "@/lib/db/dorm-repository";
 import { assignStudentToRoom } from "@/lib/data-store";
 
 export async function POST(request) {
@@ -25,7 +27,10 @@ export async function POST(request) {
   }
 
   try {
-    const assignment = assignStudentToRoom(body.studentId, body.roomId);
+    const assignment = isDatabaseConfigured()
+      ? await assignStudentToRoomInDb(body.studentId, body.roomId)
+      : assignStudentToRoom(body.studentId, body.roomId);
+
     return NextResponse.json({ assignment });
   } catch (error) {
     return NextResponse.json(

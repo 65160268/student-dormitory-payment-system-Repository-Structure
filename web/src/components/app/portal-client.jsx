@@ -133,6 +133,34 @@ function getRoomStatusMeta(status) {
   };
 }
 
+function getAdminUserStatusMeta(row) {
+  if (row.role !== "student") {
+    return {
+      label: "active",
+      className: "border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:text-sky-300 rounded-md",
+    };
+  }
+
+  if (row.roomId) {
+    return {
+      label: "in dorm",
+      className: "border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 rounded-md",
+    };
+  }
+
+  if (row.checkOutDate) {
+    return {
+      label: "moved out",
+      className: "border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 rounded-md",
+    };
+  }
+
+  return {
+    label: "awaiting room",
+    className: "border border-border/70 bg-muted/20 px-2 py-0.5 text-xs font-semibold text-muted-foreground rounded-md",
+  };
+}
+
 function getAmenityList(amenities = {}) {
   const labelMap = [
     ["airConditioner", "แอร์"],
@@ -245,15 +273,16 @@ export function PortalClient({ user, dashboardData }) {
     open: false,
     title: "",
     description: "",
+    details: [],
     onConfirm: null,
   });
 
-  function askConfirm(title, description, onConfirm) {
-    setConfirmDialog({ open: true, title, description, onConfirm });
+  function askConfirm(title, description, onConfirm, details = []) {
+    setConfirmDialog({ open: true, title, description, details, onConfirm });
   }
 
   function closeConfirmDialog() {
-    setConfirmDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
+    setConfirmDialog((prev) => ({ ...prev, open: false, details: [], onConfirm: null }));
   }
 
   function showSuccess(messageText) {
@@ -337,12 +366,14 @@ export function PortalClient({ user, dashboardData }) {
       return rows;
     }
 
+    const sourceRows = adminUsers.length ? adminUsers : rows;
+
     if (adminUserRoleFilter === "all") {
-      return rows;
+      return sourceRows;
     }
 
-    return rows.filter((item) => item.role === adminUserRoleFilter);
-  }, [adminUserRoleFilter, rows, user.role]);
+    return sourceRows.filter((item) => item.role === adminUserRoleFilter);
+  }, [adminUserRoleFilter, adminUsers, rows, user.role]);
   const adminRoomFloors = useMemo(
     () => Array.from(new Set(adminRooms.map((room) => room.floor))).sort((a, b) => a - b),
     [adminRooms],
@@ -425,7 +456,7 @@ export function PortalClient({ user, dashboardData }) {
       return;
     }
 
-    const studentRows = rows.filter((item) => item.role === "student");
+    const studentRows = adminUsers.filter((item) => item.role === "student");
     if (!studentRows.length) {
       setSelectedAdminStudentId("");
       return;
@@ -434,7 +465,7 @@ export function PortalClient({ user, dashboardData }) {
     if (!studentRows.some((item) => item.id === selectedAdminStudentId)) {
       setSelectedAdminStudentId(studentRows[0].id);
     }
-  }, [rows, selectedAdminStudentId, user.role]);
+  }, [adminUsers, selectedAdminStudentId, user.role]);
 
   useEffect(() => {
     if (user.role !== "admin") {
@@ -763,7 +794,7 @@ export function PortalClient({ user, dashboardData }) {
       return {
         title: "Admin Dashboard",
         description: "Directory of user accounts with role-based filtering.",
-        columns: ["id", "name", "username", "role", "roomId"],
+        columns: ["id", "name", "username", "role", "roomId", "status", "actions"],
       };
     }
 
@@ -1093,36 +1124,45 @@ export function PortalClient({ user, dashboardData }) {
     );
   }
 
-  async function deleteSelectedStudentByAdmin() {
-    if (!selectedAdminStudent) {
+  async function deleteSelectedStudentByAdmin(studentOverride = null) {
+    const student = studentOverride ?? selectedAdminStudent;
+
+    if (!student) {
       showError("Please select a student first.");
       return;
     }
 
-    if (selectedAdminStudent.roomId) {
+    if (student.roomId) {
       showError("Student must move out before deletion.");
       return;
     }
 
-    if (!selectedAdminStudent.checkOutDate) {
+    if (!student.checkOutDate) {
       showError("Move-out date is required before deleting student.");
       return;
     }
 
     askConfirm(
       "ยืนยันการลบนักศึกษา",
-      `ลบ ${selectedAdminStudent.name} ออกจากระบบ? การกระทำนี้ไม่สามารถยกเลิกได้`,
+      `ลบ ${student.name} ออกจากระบบ? การกระทำนี้ไม่สามารถยกเลิกได้`,
       async () => {
         await runAction(async () => {
           const response = await fetch("/api/admin/users", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentId: selectedAdminStudent.id }),
+            body: JSON.stringify({ studentId: student.id }),
           });
           const payload = await parseApiResponse(response);
           showSuccess(`Deleted student ${payload.deleted.name}.`);
         });
       },
+      [
+        { label: "ID", value: student.id },
+        { label: "Username", value: student.username },
+        { label: "สถานะ", value: getAdminUserStatusMeta(student).label },
+        { label: "ห้องล่าสุด", value: student.roomId ?? "-" },
+        { label: "วันที่ย้ายออก", value: formatDate(student.checkOutDate) },
+      ],
     );
   }
 
@@ -1379,13 +1419,56 @@ export function PortalClient({ user, dashboardData }) {
                     >
                       {tableMeta.columns.map((key) => (
                         <TableCell key={`${row.id}-${key}`}>
-                          {[
+                          {key === "actions" && user.role === "admin"
+                            ? (
+                              <div className="flex flex-wrap items-center gap-2">
+                                {row.role === "student" ? (
+                                  <>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="cursor-pointer"
+                                      onClick={() => {
+                                        setSelectedAdminStudentId(row.id);
+                                        setSelectedAdminRoomId(row.roomId ?? "");
+                                      }}
+                                    >
+                                      จัดการ
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="sm"
+                                      className="cursor-pointer"
+                                      disabled={busy || Boolean(row.roomId) || !row.checkOutDate}
+                                      onClick={() => {
+                                        setSelectedAdminStudentId(row.id);
+                                        setSelectedAdminRoomId(row.roomId ?? "");
+                                        deleteSelectedStudentByAdmin(row);
+                                      }}
+                                    >
+                                      ลบผู้ใช้
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">-</span>
+                                )}
+                              </div>
+                            )
+                            : [
                             "amount",
                             "rent",
                             "water",
                             "electricity",
                           ].includes(key)
                             ? formatMoney(row[key])
+                            : user.role === "admin" && key === "status"
+                              ? (
+                                <span className={getAdminUserStatusMeta(row).className}>
+                                  {getAdminUserStatusMeta(row).label}
+                                </span>
+                              )
                             : key === "status"
                               ? (
                                 <span className={getStatusMeta(row[key]).className}>
@@ -2183,6 +2266,9 @@ export function PortalClient({ user, dashboardData }) {
                   <p className="mt-1 text-xs text-muted-foreground">
                     นักศึกษาที่ถูกลบ (Archive): {adminRemovedStudents.length}
                   </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    แนะนำ: กด &quot;ลบผู้ใช้&quot; จากตารางด้านซ้ายได้เลย หลังนักศึกษาย้ายออกและมีวันที่ย้ายออกแล้ว
+                  </p>
                 </div>
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
@@ -2358,6 +2444,18 @@ export function PortalClient({ user, dashboardData }) {
             <DialogTitle>{confirmDialog.title}</DialogTitle>
             <DialogDescription>{confirmDialog.description}</DialogDescription>
           </DialogHeader>
+          {confirmDialog.details?.length ? (
+            <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-sm">
+              <div className="space-y-2">
+                {confirmDialog.details.map((detail) => (
+                  <div key={detail.label} className="flex items-start justify-between gap-3">
+                    <span className="text-muted-foreground">{detail.label}</span>
+                    <span className="text-right font-medium">{detail.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"

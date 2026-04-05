@@ -129,6 +129,48 @@ export const users = [
 
 export const removedStudents = [];
 
+export const USER_ROLE_PREFIX_MAP = {
+  student: "stu",
+  staff: "staff",
+  finance: "fin",
+  manager: "mgr",
+  admin: "admin",
+};
+
+function normalizeUserIdPart(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function buildUserIdFromRoleAndUsername(role, username, existingIds = []) {
+  const normalizedRole = String(role ?? "").trim().toLowerCase();
+  const prefix = USER_ROLE_PREFIX_MAP[normalizedRole];
+
+  if (!prefix) {
+    throw new Error("invalid role");
+  }
+
+  const normalizedUsername = normalizeUserIdPart(username);
+  if (!normalizedUsername) {
+    throw new Error("username is required for id generation");
+  }
+
+  const baseId = `${prefix}-${normalizedUsername}`;
+  if (!existingIds.includes(baseId)) {
+    return baseId;
+  }
+
+  let counter = 2;
+  while (existingIds.includes(`${baseId}-${counter}`)) {
+    counter += 1;
+  }
+
+  return `${baseId}-${counter}`;
+}
+
 export const roomRates = {
   rent: 4500,
   waterPerUnit: 22,
@@ -991,17 +1033,17 @@ export function createAdminUser({ name, username, password, role }) {
     throw new Error("invalid role");
   }
 
-  const prefixMap = {
-    student: "stu",
-    staff: "staff",
-    finance: "fin",
-    manager: "mgr",
-    admin: "admin",
-  };
+  const nextId = buildUserIdFromRoleAndUsername(
+    normalizedRole,
+    normalizedUsername,
+    [
+      ...users.map((item) => item.id),
+      ...removedStudents.map((item) => item.id),
+    ],
+  );
 
-  const nextSequence = users.filter((item) => item.role === normalizedRole).length + 1;
   const user = {
-    id: `${prefixMap[normalizedRole]}-${String(nextSequence).padStart(3, "0")}`,
+    id: nextId,
     name: normalizedName,
     username: normalizedUsername,
     password: normalizedPassword,

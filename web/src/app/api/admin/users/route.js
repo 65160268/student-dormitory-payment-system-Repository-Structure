@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
+import { isDatabaseConfigured } from "@/lib/db/client";
+import {
+  createAdminUserInDb,
+  deleteStudentUserInDb,
+  listRemovedStudentsFromDb,
+  listUsersFromDb,
+  restoreStudentUserInDb,
+} from "@/lib/db/dorm-repository";
 import {
   createAdminUser,
   deleteStudentUser,
@@ -30,6 +38,15 @@ export async function GET(request) {
     return auth.error;
   }
 
+  if (isDatabaseConfigured()) {
+    const [users, removedStudents] = await Promise.all([
+      listUsersFromDb(),
+      listRemovedStudentsFromDb(),
+    ]);
+
+    return NextResponse.json({ users, removedStudents });
+  }
+
   return NextResponse.json({
     users: listUsers(),
     removedStudents: listRemovedStudents(),
@@ -45,7 +62,10 @@ export async function POST(request) {
   const body = await request.json();
 
   try {
-    const user = createAdminUser(body);
+    const user = isDatabaseConfigured()
+      ? await createAdminUserInDb(body)
+      : createAdminUser(body);
+
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
@@ -71,7 +91,10 @@ export async function DELETE(request) {
   }
 
   try {
-    const deleted = deleteStudentUser(body.studentId);
+    const deleted = isDatabaseConfigured()
+      ? await deleteStudentUserInDb(body.studentId)
+      : deleteStudentUser(body.studentId);
+
     return NextResponse.json({ deleted });
   } catch (error) {
     return NextResponse.json(
@@ -97,7 +120,10 @@ export async function PATCH(request) {
   }
 
   try {
-    const restored = restoreStudentUser(body.studentId);
+    const restored = isDatabaseConfigured()
+      ? await restoreStudentUserInDb(body.studentId)
+      : restoreStudentUser(body.studentId);
+
     return NextResponse.json({ restored });
   } catch (error) {
     return NextResponse.json(

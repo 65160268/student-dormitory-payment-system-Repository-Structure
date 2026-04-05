@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { users as fallbackUsers } from "@/lib/data-store";
 import { getCurrentRoomIdByStudentId } from "@/lib/db/dorm-repository";
@@ -38,7 +38,7 @@ async function findFromDatabase(username, password) {
   const rows = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.username, username))
+    .where(and(eq(usersTable.username, username), eq(usersTable.isActive, 1)))
     .limit(1);
 
   const user = rows[0];

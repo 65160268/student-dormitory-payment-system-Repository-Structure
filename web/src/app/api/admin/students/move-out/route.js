@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
+import { isDatabaseConfigured } from "@/lib/db/client";
+import { moveOutStudentFromRoomInDb } from "@/lib/db/dorm-repository";
 import { moveOutStudentFromRoom } from "@/lib/data-store";
 
 export async function POST(request) {
@@ -25,7 +27,10 @@ export async function POST(request) {
   }
 
   try {
-    const movedOut = moveOutStudentFromRoom(body.studentId);
+    const movedOut = isDatabaseConfigured()
+      ? await moveOutStudentFromRoomInDb(body.studentId)
+      : moveOutStudentFromRoom(body.studentId);
+
     return NextResponse.json({ movedOut });
   } catch (error) {
     return NextResponse.json(

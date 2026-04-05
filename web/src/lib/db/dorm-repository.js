@@ -1,6 +1,12 @@
-import { and, desc, eq, isNull, ne } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import { and, desc, eq, isNull, ne, or } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
+import {
+  buildUserIdFromRoleAndUsername,
+  dormRooms as fallbackDormRooms,
+  USER_ROLE_PREFIX_MAP,
+} from "@/lib/data-store";
 import {
   housingRecordsTable,
   invoicesTable,
@@ -44,6 +50,86 @@ function normalizeSlipUrl(value) {
   }
 
   return "uploaded";
+}
+
+function toDateOnly(value) {
+  if (!value) {
+    return null;
+  }
+
+  return String(value).slice(0, 10);
+}
+
+function getRoomMeta(roomId) {
+  const fallbackRoom = fallbackDormRooms.find((room) => room.id === roomId);
+  if (fallbackRoom) {
+    return fallbackRoom;
+  }
+
+  const inferredFloor = Number.parseInt(String(roomId).split("-")[0]?.replace(/[^0-9]/g, ""), 10);
+
+  return {
+    id: roomId,
+    floor: Number.isFinite(inferredFloor) ? inferredFloor : 0,
+    monthlyPrice: 0,
+    amenities: {},
+  };
+}
+
+async function getHousingHistoryMapByStudentId(studentIds = null) {
+  const db = getDb();
+  let query = db
+    .select({
+      studentId: housingRecordsTable.studentId,
+      roomId: housingRecordsTable.roomId,
+      checkInDate: housingRecordsTable.checkInDate,
+      checkOutDate: housingRecordsTable.checkOutDate,
+    })
+    .from(housingRecordsTable)
+    .orderBy(desc(housingRecordsTable.checkInDate));
+
+  if (Array.isArray(studentIds) && studentIds.length) {
+    query = query.where(or(...studentIds.map((studentId) => eq(housingRecordsTable.studentId, studentId))));
+  }
+
+  const rows = await query;
+  const historyMap = new Map();
+
+  for (const row of rows) {
+    const history = historyMap.get(row.studentId) ?? [];
+    history.push({
+      roomId: row.roomId,
+      checkInDate: toDateOnly(row.checkInDate),
+      checkOutDate: toDateOnly(row.checkOutDate),
+    });
+    historyMap.set(row.studentId, history);
+  }
+
+  return historyMap;
+}
+
+async function getOpenHousingRecordByStudentId(studentId) {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(housingRecordsTable)
+    .where(and(eq(housingRecordsTable.studentId, studentId), isNull(housingRecordsTable.checkOutDate)))
+    .orderBy(desc(housingRecordsTable.checkInDate))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+async function getOpenHousingRecordByRoomId(roomId) {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(housingRecordsTable)
+    .where(and(eq(housingRecordsTable.roomId, roomId), isNull(housingRecordsTable.checkOutDate)))
+    .orderBy(desc(housingRecordsTable.checkInDate))
+    .limit(1);
+
+  return rows[0] ?? null;
 }
 
 async function getCurrentRoomMapByStudentId() {
@@ -203,7 +289,7 @@ export async function getDashboardByRoleFromDb(role, user) {
   }
 
   if (role === "admin") {
-    const users = await db.select().from(usersTable);
+    const users = await db.select().from(usersTable).where(eq(usersTable.isActive, 1));
 
     return {
       ...common,
@@ -255,7 +341,7 @@ export async function getDashboardByRoleFromDb(role, user) {
     };
   }
 
-  const users = await db.select().from(usersTable);
+  const users = await db.select().from(usersTable).where(eq(usersTable.isActive, 1));
   return {
     ...common,
     rows: users.map((item) => ({
@@ -396,5 +482,322 @@ export async function decidePaymentInDb(paymentId, status, reviewerId, rejectRea
     reviewerId: updated.reviewerId,
     rejectReason: updated.rejectReason ?? "",
     reviewedAt: toIsoDate(updated.reviewedAt),
+  };
+}
+
+export async function listUsersFromDb() {
+  const db = getDb();
+  const [users, roomMap, historyMap] = await Promise.all([
+    db.select().from(usersTable).where(eq(usersTable.isActive, 1)),
+    getCurrentRoomMapByStudentId(),
+    getHousingHistoryMapByStudentId(),
+  ]);
+
+  return users.map((item) => ({
+    id: item.id,
+    name: item.name,
+    username: item.username,
+    role: item.role,
+    roomId: roomMap.get(item.id)?.roomId ?? null,
+    checkInDate: toDateOnly(roomMap.get(item.id)?.checkInDate),
+    checkOutDate: null,
+    housingHistory: historyMap.get(item.id) ?? [],
+  }));
+}
+
+export async function listStudentUsersFromDb() {
+  const db = getDb();
+  const students = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.isActive, 1), eq(usersTable.role, "student")));
+
+  const studentIds = students.map((item) => item.id);
+  const [roomMap, historyMap] = await Promise.all([
+    getCurrentRoomMapByStudentId(),
+    getHousingHistoryMapByStudentId(studentIds),
+  ]);
+
+  return students.map((item) => {
+    const currentRoom = roomMap.get(item.id);
+    const history = historyMap.get(item.id) ?? [];
+
+    return {
+      id: item.id,
+      name: item.name,
+      username: item.username,
+      roomId: currentRoom?.roomId ?? null,
+      checkInDate: toDateOnly(currentRoom?.checkInDate) ?? history[0]?.checkInDate ?? null,
+      checkOutDate: history.find((entry) => entry.checkOutDate)?.checkOutDate ?? null,
+      housingHistory: history,
+    };
+  });
+}
+
+export async function listRemovedStudentsFromDb() {
+  const db = getDb();
+  const students = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.isActive, 0), eq(usersTable.role, "student")));
+
+  const historyMap = await getHousingHistoryMapByStudentId(students.map((item) => item.id));
+
+  return students.map((item) => ({
+    id: item.id,
+    name: item.name,
+    username: item.username,
+    deletedAt: toIsoDate(item.deletedAt),
+    checkInDate: historyMap.get(item.id)?.[0]?.checkInDate ?? null,
+    checkOutDate: historyMap.get(item.id)?.find((entry) => entry.checkOutDate)?.checkOutDate ?? null,
+    housingHistory: historyMap.get(item.id) ?? [],
+  }));
+}
+
+export async function listRoomsWithStatusFromDb() {
+  const db = getDb();
+  const [rooms, currentRoomMap, students] = await Promise.all([
+    db.select().from(roomsTable).where(eq(roomsTable.isActive, 1)),
+    getCurrentRoomMapByStudentId(),
+    db.select().from(usersTable).where(and(eq(usersTable.isActive, 1), eq(usersTable.role, "student"))),
+  ]);
+
+  const studentMap = new Map(students.map((student) => [student.id, student]));
+  const occupantByRoomId = new Map();
+
+  for (const [studentId, currentRoom] of currentRoomMap.entries()) {
+    occupantByRoomId.set(currentRoom.roomId, studentMap.get(studentId));
+  }
+
+  return rooms.map((room) => {
+    const occupant = occupantByRoomId.get(room.id);
+    const meta = getRoomMeta(room.id);
+
+    return {
+      id: room.id,
+      floor: meta.floor,
+      monthlyPrice: meta.monthlyPrice,
+      amenities: meta.amenities,
+      status: occupant ? "occupied" : "vacant",
+      occupant: occupant
+        ? {
+            id: occupant.id,
+            name: occupant.name,
+            username: occupant.username,
+          }
+        : null,
+    };
+  });
+}
+
+export async function createAdminUserInDb({ name, username, password, role }) {
+  const db = getDb();
+  const normalizedName = String(name ?? "").trim();
+  const normalizedUsername = String(username ?? "").trim();
+  const normalizedPassword = String(password ?? "").trim();
+  const normalizedRole = String(role ?? "").trim().toLowerCase();
+
+  if (!normalizedName || !normalizedUsername || !normalizedPassword || !normalizedRole) {
+    throw new Error("name, username, password and role are required");
+  }
+
+  if (!USER_ROLE_PREFIX_MAP[normalizedRole]) {
+    throw new Error("invalid role");
+  }
+
+  const existingUsers = await db.select().from(usersTable);
+  if (existingUsers.some((item) => item.username === normalizedUsername)) {
+    throw new Error("username already exists");
+  }
+
+  const userId = buildUserIdFromRoleAndUsername(
+    normalizedRole,
+    normalizedUsername,
+    existingUsers.map((item) => item.id),
+  );
+
+  const now = new Date();
+  const passwordHash = await bcrypt.hash(normalizedPassword, 10);
+
+  await db.insert(usersTable).values({
+    id: userId,
+    username: normalizedUsername,
+    passwordHash,
+    name: normalizedName,
+    role: normalizedRole,
+    isActive: 1,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return {
+    id: userId,
+    name: normalizedName,
+    username: normalizedUsername,
+    role: normalizedRole,
+    roomId: null,
+  };
+}
+
+export async function assignStudentToRoomInDb(studentId, roomId) {
+  const db = getDb();
+  const [studentRows, roomRows, currentStudentRoom, currentRoomOccupant] = await Promise.all([
+    db
+      .select()
+      .from(usersTable)
+      .where(and(eq(usersTable.id, studentId), eq(usersTable.role, "student"), eq(usersTable.isActive, 1)))
+      .limit(1),
+    db
+      .select()
+      .from(roomsTable)
+      .where(and(eq(roomsTable.id, roomId), eq(roomsTable.isActive, 1)))
+      .limit(1),
+    getOpenHousingRecordByStudentId(studentId),
+    getOpenHousingRecordByRoomId(roomId),
+  ]);
+
+  const student = studentRows[0];
+  if (!student) {
+    throw new Error("student not found");
+  }
+
+  if (!roomRows[0]) {
+    throw new Error("room not found");
+  }
+
+  if (currentStudentRoom) {
+    throw new Error("student is already assigned to a room");
+  }
+
+  if (currentRoomOccupant) {
+    throw new Error("room is occupied");
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  await db.insert(housingRecordsTable).values({
+    studentId,
+    roomId,
+    checkInDate: today,
+    checkOutDate: null,
+    createdAt: new Date(),
+  });
+
+  return {
+    studentId: student.id,
+    studentName: student.name,
+    roomId,
+  };
+}
+
+export async function moveOutStudentFromRoomInDb(studentId) {
+  const db = getDb();
+  const [studentRows, openRecord] = await Promise.all([
+    db
+      .select()
+      .from(usersTable)
+      .where(and(eq(usersTable.id, studentId), eq(usersTable.role, "student"), eq(usersTable.isActive, 1)))
+      .limit(1),
+    getOpenHousingRecordByStudentId(studentId),
+  ]);
+
+  const student = studentRows[0];
+  if (!student) {
+    throw new Error("student not found");
+  }
+
+  if (!openRecord) {
+    throw new Error("student is not assigned to any room");
+  }
+
+  const checkOutDate = new Date().toISOString().slice(0, 10);
+
+  await db
+    .update(housingRecordsTable)
+    .set({ checkOutDate })
+    .where(
+      and(
+        eq(housingRecordsTable.studentId, studentId),
+        eq(housingRecordsTable.roomId, openRecord.roomId),
+        eq(housingRecordsTable.checkInDate, openRecord.checkInDate),
+        isNull(housingRecordsTable.checkOutDate),
+      ),
+    );
+
+  return {
+    studentId: student.id,
+    studentName: student.name,
+    previousRoomId: openRecord.roomId,
+    checkOutDate,
+  };
+}
+
+export async function deleteStudentUserInDb(studentId) {
+  const db = getDb();
+  const [studentRows, openRecord] = await Promise.all([
+    db
+      .select()
+      .from(usersTable)
+      .where(and(eq(usersTable.id, studentId), eq(usersTable.role, "student"), eq(usersTable.isActive, 1)))
+      .limit(1),
+    getOpenHousingRecordByStudentId(studentId),
+  ]);
+
+  const student = studentRows[0];
+  if (!student) {
+    throw new Error("student not found");
+  }
+
+  if (openRecord) {
+    throw new Error("student must move out before deletion");
+  }
+
+  const historyRows = await db
+    .select()
+    .from(housingRecordsTable)
+    .where(eq(housingRecordsTable.studentId, studentId))
+    .orderBy(desc(housingRecordsTable.checkInDate))
+    .limit(1);
+
+  if (historyRows[0] && !historyRows[0].checkOutDate) {
+    throw new Error("student must have a move-out date before deletion");
+  }
+
+  const now = new Date();
+  await db
+    .update(usersTable)
+    .set({ isActive: 0, deletedAt: now, updatedAt: now })
+    .where(eq(usersTable.id, studentId));
+
+  return {
+    id: student.id,
+    name: student.name,
+    username: student.username,
+  };
+}
+
+export async function restoreStudentUserInDb(studentId) {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(usersTable)
+    .where(and(eq(usersTable.id, studentId), eq(usersTable.role, "student"), eq(usersTable.isActive, 0)))
+    .limit(1);
+
+  const student = rows[0];
+  if (!student) {
+    throw new Error("student not found in archive");
+  }
+
+  const now = new Date();
+  await db
+    .update(usersTable)
+    .set({ isActive: 1, deletedAt: null, updatedAt: now })
+    .where(eq(usersTable.id, studentId));
+
+  return {
+    id: student.id,
+    name: student.name,
+    username: student.username,
   };
 }
