@@ -48,29 +48,39 @@
 ## 📂 โครงสร้างพื้นที่เก็บข้อมูล (Repository Structure)
 
 ```
-📂 student-dormitory-payment-system
- ├── 📄 README.md (ภาพรวมโครงการ)
- ├── 📄 .gitignore
- └── 📂 docs
-      ├── 📄 D1_ProjectCharter.md (กฎบัตรโครงการ)
-      ├── 📄 D1_SRS.md (ข้อกำหนดซอฟต์แวร์)
-      ├── 📄 D1_UserStories.md (ความต้องการผู้ใช้)
-      └── 📂 diagrams
-           ├── 📂 Use_Case_Diagram
-           │    └── 🖼️ use_case_diagram.png
-           ├── 📂 Activity_Diagram
-           │    ├── 📂 Admin
-           │    │    └── 🖼️ activity_diagram.png
-           │    ├── 📂 Finance
-           │    │    └── 🖼️ activity_diagram.png
-           │    ├── 📂 Manager
-           │    │    └── 🖼️ activity_diagram.png
-           │    ├── 📂 Staff
-           │    │    └── 🖼️ activity_diagram.png
-           │    └── 📂 Student
-           │         └── 🖼️ activity_diagram.png
-           └── 📂 Er_Diagram
-                └── 🖼️ er_diagram.png
+📂 student-dormitory-payment-system-Repository-Structure
+ ├── 📄 README.md
+ ├── 📂 docs
+ │    ├── 📄 D1_ProjectCharter.md
+ │    ├── 📄 D1_SRS.md
+ │    ├── 📄 D1_UserStories.md
+ │    ├── 📄 D2_Architecture.md
+ │    ├── 📄 D2_Coding_Standards.md
+ │    ├── 📄 D2_Data_Dictionary.md
+ │    ├── 📄 D2_Design_Patterns.md
+ │    ├── 📄 D4_Security_Assessment_Summary.md
+ │    ├── 📄 D5_Final_Presentation_Brief.md
+ │    ├── 📄 database_schema.sql
+ │    ├── 📄 fix_passwords.sql
+ │    ├── 📄 grant_dorm_app.sql
+ │    └── 📂 diagrams
+ │         ├── 📂 Activity_Diagram
+ │         ├── 📂 Components_Diagrams
+ │         ├── 📂 Er_Diagram
+ │         └── 📂 Use_Case_Diagram
+ ├── 📂 tests
+ │    ├── 📂 docs
+ │    ├── 📂 integration
+ │    └── 📂 unit
+ └── 📂 web
+      ├── 📄 README.md
+      ├── 📄 package.json
+      ├── 📂 public
+      ├── 📂 sql
+      └── 📂 src
+           ├── 📂 app
+           ├── 📂 components
+           └── 📂 lib
 
 ```
 
