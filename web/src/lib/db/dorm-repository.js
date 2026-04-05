@@ -163,13 +163,17 @@ export async function getCurrentRoomIdByStudentId(studentId) {
 export async function getDashboardByRoleFromDb(role, user) {
   const db = getDb();
 
-  const [allInvoices, allPayments, roomMap, activeRoomsResult, totalRoomsResult] = await Promise.all([
-    db.select().from(invoicesTable),
-    db.select().from(paymentsTable),
-    getCurrentRoomMapByStudentId(),
-    db.select().from(housingRecordsTable).where(isNull(housingRecordsTable.checkOutDate)),
-    db.select().from(roomsTable).where(eq(roomsTable.isActive, 1)),
-  ]);
+  const allInvoices = await db.select().from(invoicesTable);
+  const allPayments = await db.select().from(paymentsTable);
+  const roomMap = await getCurrentRoomMapByStudentId();
+  const activeRoomsResult = await db
+    .select()
+    .from(housingRecordsTable)
+    .where(isNull(housingRecordsTable.checkOutDate));
+  const totalRoomsResult = await db
+    .select()
+    .from(roomsTable)
+    .where(eq(roomsTable.isActive, 1));
 
   const outstandingTotal = allInvoices
     .filter((item) => item.status !== "paid")
@@ -493,16 +497,21 @@ export async function listUsersFromDb() {
     getHousingHistoryMapByStudentId(),
   ]);
 
-  return users.map((item) => ({
-    id: item.id,
-    name: item.name,
-    username: item.username,
-    role: item.role,
-    roomId: roomMap.get(item.id)?.roomId ?? null,
-    checkInDate: toDateOnly(roomMap.get(item.id)?.checkInDate),
-    checkOutDate: null,
-    housingHistory: historyMap.get(item.id) ?? [],
-  }));
+  return users.map((item) => {
+    const currentRoom = roomMap.get(item.id);
+    const history = historyMap.get(item.id) ?? [];
+
+    return {
+      id: item.id,
+      name: item.name,
+      username: item.username,
+      role: item.role,
+      roomId: currentRoom?.roomId ?? null,
+      checkInDate: toDateOnly(currentRoom?.checkInDate) ?? history[0]?.checkInDate ?? null,
+      checkOutDate: history.find((entry) => entry.checkOutDate)?.checkOutDate ?? null,
+      housingHistory: history,
+    };
+  });
 }
 
 export async function listStudentUsersFromDb() {

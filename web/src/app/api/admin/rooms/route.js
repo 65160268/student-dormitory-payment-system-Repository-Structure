@@ -30,12 +30,16 @@ export async function GET(request) {
   }
 
   if (isDatabaseConfigured()) {
-    const [rooms, students] = await Promise.all([
-      listRoomsWithStatusFromDb(),
-      listStudentUsersFromDb(),
-    ]);
+    try {
+      const [rooms, students] = await Promise.all([
+        listRoomsWithStatusFromDb(),
+        listStudentUsersFromDb(),
+      ]);
 
-    return NextResponse.json({ rooms, students });
+      return NextResponse.json({ rooms, students });
+    } catch {
+      // Fallback keeps admin panel usable when DB is temporarily unavailable.
+    }
   }
 
   return NextResponse.json({

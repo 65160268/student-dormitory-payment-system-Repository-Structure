@@ -39,12 +39,16 @@ export async function GET(request) {
   }
 
   if (isDatabaseConfigured()) {
-    const [users, removedStudents] = await Promise.all([
-      listUsersFromDb(),
-      listRemovedStudentsFromDb(),
-    ]);
+    try {
+      const [users, removedStudents] = await Promise.all([
+        listUsersFromDb(),
+        listRemovedStudentsFromDb(),
+      ]);
 
-    return NextResponse.json({ users, removedStudents });
+      return NextResponse.json({ users, removedStudents });
+    } catch {
+      // Fallback keeps admin panel usable when DB is temporarily unavailable.
+    }
   }
 
   return NextResponse.json({

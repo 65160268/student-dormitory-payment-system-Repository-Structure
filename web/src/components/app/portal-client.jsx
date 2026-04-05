@@ -134,29 +134,36 @@ function getRoomStatusMeta(status) {
 }
 
 function getAdminUserStatusMeta(row) {
+  if (row.deletedAt) {
+    return {
+      label: "เก็บเข้าคลังแล้ว",
+      className: "border border-slate-500/30 bg-slate-500/10 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:text-slate-300 rounded-md",
+    };
+  }
+
   if (row.role !== "student") {
     return {
-      label: "active",
+      label: "ใช้งานอยู่",
       className: "border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:text-sky-300 rounded-md",
     };
   }
 
   if (row.roomId) {
     return {
-      label: "in dorm",
+      label: "พักอยู่ในหอ",
       className: "border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 rounded-md",
     };
   }
 
   if (row.checkOutDate) {
     return {
-      label: "moved out",
+      label: "ย้ายออกแล้ว",
       className: "border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300 rounded-md",
     };
   }
 
   return {
-    label: "awaiting room",
+    label: "รอจัดห้อง",
     className: "border border-border/70 bg-muted/20 px-2 py-0.5 text-xs font-semibold text-muted-foreground rounded-md",
   };
 }
@@ -245,6 +252,7 @@ export function PortalClient({ user, dashboardData }) {
   const [selectedFinancePaymentId, setSelectedFinancePaymentId] = useState("");
   const [financeRejectReason, setFinanceRejectReason] = useState("");
   const [expandedSlipUrl, setExpandedSlipUrl] = useState("");
+  const adminRoomBoardRef = useRef(null);
 
   // ─── DB Status ─────────────────────────────────────────────────
   const [dbStatus, setDbStatus] = useState(null);
@@ -896,7 +904,9 @@ export function PortalClient({ user, dashboardData }) {
   }
 
   useEffect(() => {
-    refreshAdminManagementData();
+    refreshAdminManagementData().catch((requestError) => {
+      showError(requestError.message || "Unable to load admin management data.");
+    });
   }, [user.role]);
 
   async function onLogout() {
@@ -1259,27 +1269,57 @@ export function PortalClient({ user, dashboardData }) {
     });
   }
 
-  async function restoreRemovedStudentByAdmin() {
-    if (!selectedRemovedStudent) {
+  async function restoreRemovedStudentByAdmin(studentOverride = null) {
+    const student = studentOverride ?? selectedRemovedStudent;
+
+    if (!student) {
       showError("Please select a deleted student from archive.");
       return;
     }
 
     askConfirm(
       "ยืนยันการกู้คืนนักศึกษา",
-      `กู้คืน ${selectedRemovedStudent.name} กลับสู่ระบบผู้ใช้งาน?`,
+      `กู้คืน ${student.name} กลับสู่ระบบผู้ใช้งาน?`,
       async () => {
         await runAction(async () => {
           const response = await fetch("/api/admin/users", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentId: selectedRemovedStudent.id }),
+            body: JSON.stringify({ studentId: student.id }),
           });
           const payload = await parseApiResponse(response);
           showSuccess(`Restored student ${payload.restored.name}.`);
         });
       },
     );
+  }
+
+  function focusAdminStudentManagement(studentRow) {
+    if (!studentRow || studentRow.role !== "student") {
+      return;
+    }
+
+    setSelectedAdminStudentId(studentRow.id);
+    setAdminRoomSearch("");
+
+    const targetRoomId = studentRow.roomId && studentRow.roomId !== "-" ? studentRow.roomId : "";
+    if (targetRoomId) {
+      const targetRoom = adminRooms.find((room) => room.id === targetRoomId);
+      if (targetRoom) {
+        setAdminRoomFloorFilter(String(targetRoom.floor));
+      } else {
+        setAdminRoomFloorFilter("all");
+      }
+      setSelectedAdminRoomId(targetRoomId);
+    } else {
+      setAdminRoomFloorFilter("all");
+      setSelectedAdminRoomId("");
+      showError("นักศึกษาคนนี้ยังไม่ได้จัดห้อง");
+    }
+
+    setTimeout(() => {
+      adminRoomBoardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   return (
@@ -1429,10 +1469,7 @@ export function PortalClient({ user, dashboardData }) {
                                       variant="outline"
                                       size="sm"
                                       className="cursor-pointer"
-                                      onClick={() => {
-                                        setSelectedAdminStudentId(row.id);
-                                        setSelectedAdminRoomId(row.roomId ?? "");
-                                      }}
+                                      onClick={() => focusAdminStudentManagement(row)}
                                     >
                                       จัดการ
                                     </Button>
@@ -1479,7 +1516,7 @@ export function PortalClient({ user, dashboardData }) {
                               ? (
                                 <button
                                   type="button"
-                                  onClick={() => setSelectedAdminStudentId(row.id)}
+                                  onClick={() => focusAdminStudentManagement(row)}
                                   className="cursor-pointer font-medium text-primary underline-offset-2 hover:underline"
                                 >
                                   {row[key]}
@@ -1510,7 +1547,7 @@ export function PortalClient({ user, dashboardData }) {
             </Table>
 
             {user.role === "admin" ? (
-              <div className="mt-5 space-y-3 rounded-lg border border-border/70 bg-muted/20 p-3">
+              <div ref={adminRoomBoardRef} className="mt-5 space-y-3 rounded-lg border border-border/70 bg-muted/20 p-3">
                 <p className="text-sm font-semibold" style={{ color: meta.color }}>
                   Room Status Board
                 </p>
@@ -2309,6 +2346,55 @@ export function PortalClient({ user, dashboardData }) {
                   >
                     Restore นักศึกษา
                   </Button>
+                  {adminRemovedStudents.length ? (
+                    <div className="space-y-2 pt-2">
+                      <p className="text-xs font-medium text-muted-foreground">รายการในคลังผู้ใช้</p>
+                      <div className="max-h-60 overflow-auto rounded-md border border-border/70 bg-background/70">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>id</TableHead>
+                              <TableHead>name</TableHead>
+                              <TableHead>username</TableHead>
+                              <TableHead>status</TableHead>
+                              <TableHead>deletedAt</TableHead>
+                              <TableHead>actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {adminRemovedStudents.map((student) => (
+                              <TableRow key={student.id}>
+                                <TableCell>{student.id}</TableCell>
+                                <TableCell>{student.name}</TableCell>
+                                <TableCell>{student.username}</TableCell>
+                                <TableCell>
+                                  <span className={getAdminUserStatusMeta(student).className}>
+                                    {getAdminUserStatusMeta(student).label}
+                                  </span>
+                                </TableCell>
+                                <TableCell>{formatDate(student.deletedAt)}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="cursor-pointer"
+                                    disabled={busy}
+                                    onClick={() => {
+                                      setAdminRestoreStudentId(student.id);
+                                      restoreRemovedStudentByAdmin(student);
+                                    }}
+                                  >
+                                    กู้คืน
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* ── ตั้งค่าอัตราค่าน้ำ/ไฟ ────────────────────────────── */}
