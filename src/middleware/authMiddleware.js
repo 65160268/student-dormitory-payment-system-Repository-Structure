@@ -2,14 +2,6 @@ const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET || "replace-with-strong-secret";
 
-class AuthError extends Error {
-  constructor(statusCode, code, message) {
-    super(message);
-    this.statusCode = statusCode;
-    this.code = code;
-  }
-}
-
 const authMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;

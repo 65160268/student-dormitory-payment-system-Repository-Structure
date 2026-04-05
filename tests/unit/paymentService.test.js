@@ -47,6 +47,20 @@ describe("paymentService", () => {
     ).rejects.toMatchObject({ statusCode: 400, code: "INVALID_INVOICE" });
   });
 
+  test("createPayment rethrows unexpected insert errors", async () => {
+    pool.query.mockResolvedValueOnce([[{ user_id: 3 }]]);
+    pool.query.mockRejectedValueOnce({ code: "ER_BAD_NULL_ERROR" });
+
+    await expect(
+      paymentService.createPayment({
+        invoiceId: 1,
+        financeId: 3,
+        paymentDate: "2026-03-08 10:15:00",
+        slipImage: null,
+      })
+    ).rejects.toMatchObject({ code: "ER_BAD_NULL_ERROR" });
+  });
+
   test("verifyPayment updates status and commits transaction", async () => {
     const connection = {
       beginTransaction: jest.fn().mockResolvedValue(undefined),

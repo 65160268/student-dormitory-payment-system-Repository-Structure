@@ -96,4 +96,18 @@ describe("invoiceService", () => {
     expect(result.invoiceId).toBe(2002);
     expect(pool.query).toHaveBeenCalledTimes(4);
   });
+
+  test("createInvoice throws unexpected insert error", async () => {
+    pool.query.mockResolvedValueOnce([
+      [{ room_id: 1, base_rent: 3500, water_unit_rate: 18, electric_unit_rate: 7 }],
+    ]);
+    pool.query.mockResolvedValueOnce([
+      [{ prev_water: 50, curr_water: 55, prev_electric: 100, curr_electric: 105 }],
+    ]);
+    pool.query.mockRejectedValueOnce({ code: "ER_BAD_NULL_ERROR" });
+
+    await expect(
+      invoiceService.createInvoice({ roomId: 1, dueDate: "2026-04-15" })
+    ).rejects.toMatchObject({ code: "ER_BAD_NULL_ERROR" });
+  });
 });
