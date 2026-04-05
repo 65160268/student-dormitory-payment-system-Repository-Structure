@@ -7,9 +7,6 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tests/docs
 
     steps:
       - name: Checkout
@@ -20,10 +17,17 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: tests/docs/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            tests/docs/package-lock.json
 
-      - name: Install
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        working-directory: tests/docs
         run: npm ci
 
       - name: Run tests with coverage (if available)
-        run: npm test -- --coverage --if-present
+        working-directory: tests/docs
+        run: npm test --if-present -- --coverage

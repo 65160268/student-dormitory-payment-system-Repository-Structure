@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tests/docs
 
     steps:
       - name: Checkout
@@ -22,13 +19,21 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: tests/docs/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            tests/docs/package-lock.json
 
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        working-directory: tests/docs
         run: npm ci
 
       - name: Lint
+        working-directory: tests/docs
         run: npm run lint --if-present
 
       - name: Test
+        working-directory: tests/docs
         run: npm test --if-present

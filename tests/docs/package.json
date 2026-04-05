@@ -4,6 +4,7 @@
   "description": "Dormitory/hotel management starter for Week 7 deliverables",
   "main": "src/server.js",
   "scripts": {
+    "bootstrap:root": "npm ci --prefix ../..",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint .",
