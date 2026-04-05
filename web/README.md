@@ -11,6 +11,7 @@ Role-based dormitory payment platform built with Next.js App Router, Tailwind CS
 - Route Handlers for API
 - Cookie-based session authentication
 - Drizzle ORM + MySQL/MariaDB login integration
+- Docker + Docker Compose deployment on Proxmox LXC
 
 ## Quick Start
 
@@ -70,6 +71,7 @@ Notes:
 - If `DATABASE_URL` (or `MYSQL_URL`) is present, login is validated from DB via Drizzle.
 - If not present, login uses in-memory demo users.
 - `password_hash` currently accepts plain text for quick testing and also supports bcrypt hashes.
+- Some operational features also support in-memory fallback data for demo scenarios.
 
 ## Routes
 
@@ -82,7 +84,9 @@ Notes:
 
 - POST /api/auth/login
 - POST /api/auth/logout
+- POST /api/auth/change-password
 - GET /api/auth/me
+- GET /api/health
 - GET /api/dashboard?role={role}
 - POST /api/payments/submit
 - GET /api/payments/pending
@@ -90,14 +94,56 @@ Notes:
 - POST /api/meter-readings
 - POST /api/invoices/batch
 - GET /api/reports/summary
+- GET /api/finance/overdue
+- POST /api/finance/overdue
+- GET /api/finance/export
+- GET /api/admin/users
+- POST /api/admin/users
+- DELETE /api/admin/users
+- PATCH /api/admin/users
+- GET /api/admin/rooms
+- POST /api/admin/rooms/assign
+- POST /api/admin/students/move-out
+- GET /api/admin/rates
+- POST /api/admin/rates
+- GET /api/admin/audit-logs
+- GET /api/maintenance
+- POST /api/maintenance
+- PATCH /api/maintenance
+- POST /api/uploads/slips
 
 ## Role Flow Coverage
 
 - Student: submit payment slip and view own invoices
 - Staff: record monthly meter readings
-- Finance: generate invoices and approve pending slips
+- Staff/Admin: manage maintenance workflow
+- Finance: generate invoices, approve pending slips, export reports, mark overdue invoices
 - Manager: load financial summary report
-- Admin: access management summary/report API
+- Admin: manage users, room assignment, room rates, audit logs, and move-out workflow
+
+## Current MVP Features
+
+- Role-based login and protected portals
+- Student billing dashboard and payment submission flow
+- Finance invoice generation and payment approval flow
+- Overdue tracking and finance CSV export
+- Admin user, room, rate, and audit management
+- Maintenance request tracking for operations
+
+## Docker Deployment
+
+Production-oriented container files are included:
+
+- `Dockerfile`: multi-stage build for Next.js production runtime
+- `docker-compose.yml`: service definition for container startup
+
+Example:
+
+```bash
+docker compose up -d --build
+```
+
+The default mapping in this workspace publishes the app on port `3069`.
 
 ## Validation
 

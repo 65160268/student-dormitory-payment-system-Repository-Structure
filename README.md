@@ -110,10 +110,11 @@
 
 ## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack) 
 
-* **Frontend:** React.js / Tailwind CSS 
-* **Backend:** Node.js / Express 
-* **Database:** MySQL / PostgreSQL 
-* **DevOps:** GitHub Actions (CI/CD)
+* **Application:** Next.js 16 (App Router + Route Handlers) / React 19 / Tailwind CSS
+* **Data Access:** Drizzle ORM
+* **Database:** MySQL / MariaDB
+* **Testing & Quality:** Jest / Supertest / ESLint / UAT
+* **DevOps:** GitHub Actions (CI), Docker, Docker Compose, Proxmox LXC
 
 ---
 

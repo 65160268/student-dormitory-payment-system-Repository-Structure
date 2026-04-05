@@ -53,8 +53,8 @@
 
 ### 💻 Developers: นิรัตติศัย & อำนาจ
 
-* **นิรัตติศัย:** ออกแบบ System Architecture, ER Diagram, ติดตั้ง CI/CD Pipeline และดูแล Back-end API
-* **อำนาจ:** พัฒนา UI/UX (Responsive Design), พัฒนาระบบ Notification, ดูแล Coding Standards และ Performance Testing
+* **นิรัตติศัย:** ออกแบบ System Architecture, ER Diagram, ติดตั้ง CI/CD Pipeline และดูแล Application/API Layer รวมถึงการ deploy ด้วย Docker บน Proxmox LXC
+* **อำนาจ:** พัฒนา UI/UX (Responsive Design), พัฒนาระบบ role-based portal, maintenance workflow และดูแล Coding Standards กับ Performance Testing
 
 ### 🔍 QA / Testers: วีรพัฒน์ & ภูวดล
 
@@ -82,15 +82,15 @@
 | --- | --- | --- |
 | 1. ข้อมูลการเงินรั่วไหล | สูงมาก | เข้ารหัสข้อมูลสลิป และจำกัดสิทธิ์การเข้าถึง (PDPA Compliance) |
 | 2. คำนวณยอดเงินผิด | สูง | ใช้ Automated Unit Test สำหรับสูตรคำนวณ (Unit x Rate) |
-| 3. การปลอมแปลงสลิป | ปานกลาง | เชื่อมต่อ Slip Verification API เพื่อตรวจ QR Code อัตโนมัติ |
-| 4. ระบบล่มวัน Deadline | สูง | ใช้ Scalable Cloud Hosting และทำ Load Testing |
-| 5. สถานะการจ่ายเงินไม่ชัดเจน | สูงมาก | มีระบบ Real-time Notification แจ้งเตือนทุกสถานะ |
+| 3. การปลอมแปลงสลิป | ปานกลาง | ใช้การตรวจสอบรายการชำระโดยฝ่ายการเงิน พร้อมเก็บหลักฐานสลิปและสถานะการอนุมัติย้อนหลัง |
+| 4. ระบบล่มวัน Deadline | สูง | ใช้ Dockerized deployment, backup configuration และเตรียม demo mode สำหรับการสาธิต |
+| 5. สถานะการจ่ายเงินไม่ชัดเจน | สูงมาก | มี dashboard แยกตามบทบาท, pending/overdue views และ audit trail สำหรับงานสำคัญ |
 
 ---
 
 ## 💻 Skills & Tech Stack
 
-* **Technical:** Web Development, Real-time Notification, Data Security
+* **Technical:** Next.js Full-stack Development, Data Security, Docker Deployment
 * **Design:** UI/UX Responsive Design
 * **Management:** Agile/Scrum Methodology, CI/CD
 

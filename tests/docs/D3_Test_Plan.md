@@ -1,4 +1,4 @@
-# แผนการทดสอบ D3 - Hotel Management API
+# แผนการทดสอบ D3 - DormPayment
 
 ## ข้อมูลทีม
 - ชื่อทีม: JR
@@ -11,7 +11,7 @@
 	- 65160022 นายภูวดล ทีขาว (Quality Assurance / Tester)
 
 ## 1. บทนำ
-- โปรเจกต์: Hotel Management API
+- โปรเจกต์: Student Dormitory Payment and Billing Management System (DormPayment)
 - เวอร์ชัน: 1.0
 - วันที่: 2026-03-22
 - ผู้จัดทำ: ทีม JR
@@ -26,7 +26,7 @@
 5. การสร้างและตรวจสอบการชำระเงิน
 
 ### ฟีเจอร์ที่อยู่นอกขอบเขต
-1. การทดสอบ UI ฝั่ง Frontend (โปรเจกต์นี้เน้น Backend)
+1. Automated frontend component testing เชิงลึก (รอบนี้เน้น API, business logic และ workflow integration)
 2. การเชื่อมต่อระบบจัดเก็บไฟล์ภายนอก
 3. การเชื่อมต่อ Payment Gateway ภายนอก
 
@@ -35,13 +35,13 @@
 ### Unit Testing
 - เครื่องมือ: Jest
 - จุดเน้น: business logic ระดับ service, การ map error, และการคำนวณ
-- เป้าหมายขั้นต่ำ: 15 test cases
+- จำนวนที่มีอยู่จริง: 30 test cases ใน 6 unit test suites
 - เป้าหมาย coverage: 80% ขึ้นไป
 
 ### Integration Testing
 - เครื่องมือ: Jest + Supertest
 - จุดเน้น: การทำงานร่วมกันของ route + middleware + controller + service
-- เป้าหมายขั้นต่ำ: 5 integration test suites
+- จำนวนที่มีอยู่จริง: 29 test cases ใน 6 integration test suites
 - ครอบคลุม: auth flow, role-based access control, payload validation, และ workflow หลัก
 
 ### System Testing (API Workflow)
@@ -51,6 +51,16 @@
 ### UAT
 - ทดสอบตามกระบวนการใช้งานจริงร่วมกับตัวแทนบทบาทผู้ใช้
 - จำนวนสถานการณ์: 3-5 สถานการณ์ พร้อมผลลัพธ์ที่คาดหวังและการลงนามรับรอง
+
+## 3.1 Current Quality Evidence
+- Automated test suites ทั้งหมด: 12 suites
+- Automated test cases ทั้งหมด: 59 cases
+- Coverage (Jest report):
+	- Statements: 88.10% (363/412)
+	- Branches: 76.92% (120/156)
+	- Functions: 90.00% (36/40)
+	- Lines: 87.99% (359/408)
+- UAT scenarios: 5 สถานการณ์ และผ่านทั้งหมด
 
 ## 4. สภาพแวดล้อมการทดสอบ
 - Node.js 20+
@@ -86,8 +96,9 @@
 3. docs/D3_Test_Cases.md
 4. docs/D3_UAT_Scenarios.md
 5. รายงาน Coverage จาก Jest
+6. ตัวเลขสรุปคุณภาพสำหรับใช้ใน Final Presentation
 
 ## การอนุมัติ
 - จัดทำโดย: ทีม JR
-- ตรวจทานโดย: [ชื่อหัวหน้าทีม]
-- วันที่อนุมัติ: [ใส่วันที่อนุมัติ]
+- ตรวจทานโดย: Product Owner และ Scrum Master
+- วันที่อนุมัติ: 6 เมษายน 2026

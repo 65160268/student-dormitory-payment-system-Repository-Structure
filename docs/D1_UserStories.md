@@ -1,27 +1,38 @@
-# 🏢 Dormitory Management System - Product Backlog
+# 🏢 DormPayment - Product Backlog
 
-ระบบบริหารจัดการหอพักนิสิต/นักศึกษา เพื่อความสะดวกในการจัดการค่าใช้จ่าย ข้อมูลการเช่า และรายงานสรุปสำหรับผู้บริหาร
+ระบบบริหารจัดการค่าใช้จ่ายหอพักนักศึกษาแบบ role-based เพื่อรองรับ billing, payment, room operations, maintenance และรายงานสำหรับผู้บริหาร
+
+> หมายเหตุ: เอกสารนี้รวมทั้ง user stories ของ MVP ปัจจุบันและ backlog สำหรับการพัฒนาระยะถัดไป โดยมีคอลัมน์ `Status` เพื่อแยกสิ่งที่ implement แล้วกับสิ่งที่ยังเป็นแผนงาน
 
 ## 📋 สรุปรายการ User Stories (Backlog Summary)
 
-| ID | Role | Title | Estimate (Points) | Priority (MoSCoW) |
-| --- | --- | --- | --- | --- |
-| US-01 | Student | การเข้าสู่ระบบ | 3 | Must Have |
-| US-02 | Student | การจัดการโปรไฟล์ผู้เช่า | 3 | Should Have |
-| US-03 | Student | ตรวจสอบยอดค่าน้ำ-ไฟ และค่าเช่า | 3 | Must Have |
-| US-04 | Student | การแจ้งชำระเงินและอัปโหลดหลักฐาน (Slip) | 5 | Must Have |
-| US-05 | Student | ดูประวัติการชำระเงินย้อนหลัง | 3 | Should Have |
-| US-06 | Student | ดาวน์โหลดใบเสร็จรับเงิน (E-Receipt) | 5 | Should Have |
-| US-07 | Staff | บันทึกเลขมิเตอร์น้ำ-ไฟ รายเดือน | 5 | Must Have |
-| US-08 | Staff | จัดการข้อมูลย้ายเข้า-ย้ายออก | 5 | Should Have |
-| US-09 | Staff | การแจ้งเตือนยอดค้างชำระ | 5 | Could Have |
-| US-10 | Finance | ตรวจสอบและอนุมัติหลักฐานการโอนเงิน | 8 | Must Have |
-| US-11 | Finance | การยืนยันยอดเงินเข้าบัญชี | 5 | Should Have |
-| US-12 | Finance | การออกใบแจ้งหนี้รายเดือน (Invoice) | 8 | Must Have |
-| US-13 | Manager | ดูรายงานสรุปรายได้ประจำเดือน/ปี | 13 | Should Have |
-| US-14 | Manager | ดูสถิติการค้างชำระเงิน | 8 | Should Have |
-| US-15 | Admin | จัดการข้อมูลห้องพักและราคา | 3 | Must Have |
-| US-16 | Admin | จัดการสิทธิ์และบัญชีผู้ใช้งาน | 5 | Must Have |
+| ID | Role | Title | Estimate (Points) | Priority (MoSCoW) | Status |
+| --- | --- | --- | --- | --- | --- |
+| US-01 | Student | การเข้าสู่ระบบ | 3 | Must Have | Implemented |
+| US-02 | Student | การจัดการโปรไฟล์ผู้เช่า | 3 | Should Have | Partial |
+| US-03 | Student | ตรวจสอบยอดค่าน้ำ-ไฟ และค่าเช่า | 3 | Must Have | Implemented |
+| US-04 | Student | การแจ้งชำระเงินและอัปโหลดหลักฐาน (Slip) | 5 | Must Have | Implemented |
+| US-05 | Student | ดูประวัติการชำระเงินย้อนหลัง | 3 | Should Have | Implemented |
+| US-06 | Student | ดาวน์โหลดใบเสร็จรับเงิน (E-Receipt) | 5 | Should Have | Planned |
+| US-07 | Staff | บันทึกเลขมิเตอร์น้ำ-ไฟ รายเดือน | 5 | Must Have | Implemented |
+| US-08 | Staff | จัดการข้อมูลย้ายเข้า-ย้ายออก | 5 | Should Have | Implemented |
+| US-09 | Staff | การแจ้งเตือนยอดค้างชำระ | 5 | Could Have | Partial |
+| US-10 | Finance | ตรวจสอบและอนุมัติหลักฐานการโอนเงิน | 8 | Must Have | Implemented |
+| US-11 | Finance | การยืนยันยอดเงินเข้าบัญชี | 5 | Should Have | Partial |
+| US-12 | Finance | การออกใบแจ้งหนี้รายเดือน (Invoice) | 8 | Must Have | Implemented |
+| US-13 | Manager | ดูรายงานสรุปรายได้ประจำเดือน/ปี | 13 | Should Have | Implemented |
+| US-14 | Manager | ดูสถิติการค้างชำระเงิน | 8 | Should Have | Implemented |
+| US-15 | Admin | จัดการข้อมูลห้องพักและราคา | 3 | Must Have | Implemented |
+| US-16 | Admin | จัดการสิทธิ์และบัญชีผู้ใช้งาน | 5 | Must Have | Implemented |
+| US-17 | Student | แจ้งซ่อมและติดตามสถานะงานซ่อม | 5 | Should Have | Implemented |
+| US-18 | All Roles | เปลี่ยนรหัสผ่านของตนเอง | 3 | Should Have | Implemented |
+| US-19 | Finance | ทำเครื่องหมาย Overdue และ Export รายงานการเงิน | 5 | Should Have | Implemented |
+| US-20 | Admin | ตรวจสอบ Audit Log และประวัติการเปลี่ยนแปลงสำคัญ | 3 | Could Have | Implemented |
+
+## สรุปสถานะ MVP ปัจจุบัน
+
+- ฟังก์ชันหลักที่พร้อมสาธิตแล้ว: login, role-based dashboard, payment submission/approval, invoice generation, meter reading, overdue tracking, room assignment/move-out, admin user management, room rate management, maintenance requests และ audit log
+- ฟีเจอร์ที่ยังเป็น backlog หรือ partial: E-Receipt PDF, external notification และการผูกระบบกับ service ภายนอก
 
 ---
 
