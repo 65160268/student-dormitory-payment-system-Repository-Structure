@@ -1,17 +1,34 @@
 import {
+  addAuditLog,
+  createMaintenanceRequest,
   createPaymentSubmission,
   decidePayment,
   getDashboardByRole,
   getInvoiceById,
+  getRoomRates,
+  listAuditLogs,
+  listMaintenanceRequests,
   listPendingPayments,
+  saveMeterReading,
+  updateMaintenanceStatus,
+  updateRoomRates,
 } from "@/lib/data-store";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import {
+  addAuditLogInDb,
+  createMaintenanceRequestInDb,
   createPaymentSubmissionInDb,
   decidePaymentInDb,
   getDashboardByRoleFromDb,
   getInvoiceByIdFromDb,
+  getRoomRatesFromDb,
+  listAuditLogsFromDb,
+  listMaintenanceRequestsFromDb,
   listPendingPaymentsFromDb,
+  saveMeterReadingInDb,
+  updateMaintenanceStatusInDb,
+  updateRoomRatesInDb,
+  upsertInvoiceFromMeterReadingInDb,
 } from "@/lib/db/dorm-repository";
 
 function isTooManyConnectionsError(error) {
@@ -109,5 +126,149 @@ export async function decidePaymentData(paymentId, status, reviewerId, rejectRea
     }
 
     return decidePayment(paymentId, status, reviewerId, rejectReason);
+  }
+}
+
+export async function saveMeterReadingData(payload, user) {
+  if (!isDatabaseConfigured()) {
+    return saveMeterReading(payload, user);
+  }
+
+  try {
+    return await saveMeterReadingInDb(payload, user);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return saveMeterReading(payload, user);
+  }
+}
+
+export async function upsertInvoiceFromMeterReadingData(reading) {
+  if (!isDatabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    return await upsertInvoiceFromMeterReadingInDb(reading);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return null;
+  }
+}
+
+export async function getRoomRatesData() {
+  if (!isDatabaseConfigured()) {
+    return getRoomRates();
+  }
+
+  try {
+    return await getRoomRatesFromDb();
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return getRoomRates();
+  }
+}
+
+export async function updateRoomRatesData(waterPerUnit, electricPerUnit, updatedBy) {
+  if (!isDatabaseConfigured()) {
+    return updateRoomRates(waterPerUnit, electricPerUnit);
+  }
+
+  try {
+    return await updateRoomRatesInDb(waterPerUnit, electricPerUnit, updatedBy);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return updateRoomRates(waterPerUnit, electricPerUnit);
+  }
+}
+
+export async function addAuditLogData(actorId, action, targetType, targetId, detail) {
+  if (!isDatabaseConfigured()) {
+    return addAuditLog(actorId, action, targetType, targetId, detail);
+  }
+
+  try {
+    return await addAuditLogInDb(actorId, action, targetType, targetId, detail);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return addAuditLog(actorId, action, targetType, targetId, detail);
+  }
+}
+
+export async function listAuditLogsData(limit = 50) {
+  if (!isDatabaseConfigured()) {
+    return listAuditLogs(limit);
+  }
+
+  try {
+    return await listAuditLogsFromDb(limit);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return listAuditLogs(limit);
+  }
+}
+
+export async function listMaintenanceRequestsData(filterStudentId = null) {
+  if (!isDatabaseConfigured()) {
+    return listMaintenanceRequests(filterStudentId);
+  }
+
+  try {
+    return await listMaintenanceRequestsFromDb(filterStudentId);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return listMaintenanceRequests(filterStudentId);
+  }
+}
+
+export async function createMaintenanceRequestData(payload) {
+  if (!isDatabaseConfigured()) {
+    return createMaintenanceRequest(payload);
+  }
+
+  try {
+    return await createMaintenanceRequestInDb(payload);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return createMaintenanceRequest(payload);
+  }
+}
+
+export async function updateMaintenanceStatusData(id, status, staffId = null) {
+  if (!isDatabaseConfigured()) {
+    return updateMaintenanceStatus(id, status, staffId);
+  }
+
+  try {
+    return await updateMaintenanceStatusInDb(id, status, staffId);
+  } catch (error) {
+    if (!isTooManyConnectionsError(error)) {
+      throw error;
+    }
+
+    return updateMaintenanceStatus(id, status, staffId);
   }
 }

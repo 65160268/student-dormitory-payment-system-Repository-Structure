@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { markOverdueInvoices, listOverdueInvoices, addAuditLog } from "@/lib/data-store";
+import { markOverdueInvoices, listOverdueInvoices } from "@/lib/data-store";
+import { addAuditLogData } from "@/lib/data-access";
 
 function getSessionUser() {
   const store = cookies();
@@ -29,7 +30,7 @@ export async function POST() {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
   const result = markOverdueInvoices();
-  addAuditLog(session.id, "mark_overdue", "invoice", "batch",
+  await addAuditLogData(session.id, "mark_overdue", "invoice", "batch",
     `ทำเครื่องหมาย overdue ${result.marked} รายการ`);
   return NextResponse.json(result);
 }

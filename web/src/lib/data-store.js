@@ -868,11 +868,38 @@ export function getDashboardByRole(role, user) {
   }
 
   if (role === "staff") {
+    const occupiedRoomIds = new Set(
+      users
+        .filter((item) => item.role === "student" && item.roomId)
+        .map((item) => item.roomId),
+    );
+
+    const roomOptions = new Set(dormRooms.map((room) => room.id));
+    users
+      .filter((item) => item.role === "student" && item.roomId)
+      .forEach((item) => roomOptions.add(item.roomId));
+    meterReadings.forEach((item) => {
+      if (item?.roomId) {
+        roomOptions.add(item.roomId);
+      }
+    });
+
+    const occupantByRoomId = new Map(
+      users
+        .filter((item) => item.role === "student" && item.roomId)
+        .map((item) => [item.roomId, item]),
+    );
+
     return {
       ...common,
-      rows: meterReadings.map((item) => ({
+      roomOptions: Array.from(roomOptions).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
+      rows: meterReadings
+        .filter((item) => occupiedRoomIds.has(item.roomId))
+        .map((item) => ({
         id: item.id,
         roomId: item.roomId,
+        studentId: occupantByRoomId.get(item.roomId)?.id ?? "-",
+        studentUsername: occupantByRoomId.get(item.roomId)?.username ?? "-",
         month: item.month,
         waterUsage: item.waterCurrent - item.waterPrevious,
         electricUsage: item.electricCurrent - item.electricPrevious,
@@ -932,7 +959,7 @@ export function createPaymentSubmission(payload, user) {
     studentId: user.id,
     amount: Number(payload.amount),
     note: payload.note ?? "",
-    slipUrl: payload.slipUrl ?? "uploaded",
+    slipUrl: payload.slipData ?? payload.slipUrl ?? "uploaded",
     slipFileName: payload.slipFileName ?? "uploaded-slip",
     submittedAt: new Date().toISOString(),
     status: "pending",
@@ -1210,10 +1237,24 @@ export function decidePayment(paymentId, status, reviewerId, rejectReason = "") 
 }
 
 export function saveMeterReading(payload, user) {
+  const month = String(payload.month ?? "").slice(0, 7);
+  const existing = meterReadings.find((item) => item.roomId === payload.roomId && item.month === month);
+
+  if (existing) {
+    existing.waterPrevious = Number(payload.waterPrevious);
+    existing.waterCurrent = Number(payload.waterCurrent);
+    existing.electricPrevious = Number(payload.electricPrevious);
+    existing.electricCurrent = Number(payload.electricCurrent);
+    existing.recordedBy = user.id;
+    existing.recordedAt = new Date().toISOString();
+    upsertInvoiceForRoomAndMonth(payload.roomId, month, existing);
+    return existing;
+  }
+
   const reading = {
     id: `MTR-${String(meterReadings.length + 1).padStart(4, "0")}`,
     roomId: payload.roomId,
-    month: payload.month,
+    month,
     waterPrevious: Number(payload.waterPrevious),
     waterCurrent: Number(payload.waterCurrent),
     electricPrevious: Number(payload.electricPrevious),
@@ -1223,7 +1264,50 @@ export function saveMeterReading(payload, user) {
   };
 
   meterReadings.unshift(reading);
+  upsertInvoiceForRoomAndMonth(payload.roomId, month, reading);
   return reading;
+}
+
+function upsertInvoiceForRoomAndMonth(roomId, month, reading) {
+  const resident = users.find((item) => item.role === "student" && item.roomId === roomId);
+  if (!resident) {
+    return null;
+  }
+
+  const waterUsage = Math.max(0, Number(reading.waterCurrent) - Number(reading.waterPrevious));
+  const electricUsage = Math.max(0, Number(reading.electricCurrent) - Number(reading.electricPrevious));
+
+  const roomRent = dormRooms.find((room) => room.id === roomId)?.monthlyPrice ?? roomRates.rent;
+  const water = waterUsage * 25;
+  const electricity = electricUsage * 5;
+  const total = roomRent + water + electricity;
+
+  const existingInvoice = invoices.find((item) => item.studentId === resident.id && item.month === month);
+  if (existingInvoice) {
+    existingInvoice.roomId = roomId;
+    existingInvoice.rent = roomRent;
+    existingInvoice.water = water;
+    existingInvoice.electricity = electricity;
+    existingInvoice.total = total;
+    existingInvoice.updatedAt = new Date().toISOString();
+    return existingInvoice;
+  }
+
+  const createdInvoice = {
+    id: `INV-${month.replace("-", "")}-${String(invoices.length + 1).padStart(3, "0")}`,
+    studentId: resident.id,
+    roomId,
+    month,
+    rent: roomRent,
+    water,
+    electricity,
+    total,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  invoices.unshift(createdInvoice);
+  return createdInvoice;
 }
 
 export function generateMonthlyInvoices(month) {

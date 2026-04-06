@@ -8,10 +8,13 @@ import {
   USER_ROLE_PREFIX_MAP,
 } from "@/lib/data-store";
 import {
+  auditLogsTable,
   housingRecordsTable,
   invoicesTable,
+  maintenanceRequestsTable,
   meterReadingsTable,
   paymentsTable,
+  roomRatesTable,
   roomsTable,
   usersTable,
 } from "@/lib/db/schema";
@@ -39,6 +42,52 @@ function createPaymentId() {
   return `PAY-${timePart}${randomPart}`;
 }
 
+function createMeterReadingId() {
+  const timePart = String(Date.now()).slice(-10);
+  const randomPart = String(Math.floor(Math.random() * 90) + 10);
+  return `MTR-${timePart}${randomPart}`;
+}
+
+function normalizeBillingMonth(value) {
+  const normalized = String(value ?? "").trim();
+  if (/^\d{4}-\d{2}$/.test(normalized)) {
+    return normalized;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    return normalized.slice(0, 7);
+  }
+  return normalized.slice(0, 7);
+}
+
+function createInvoiceId(month) {
+  const monthPart = String(month ?? "").replace(/[^0-9]/g, "").slice(0, 6) || "000000";
+  const randomPart = String(Math.floor(Math.random() * 9000) + 1000);
+  return `INV-${monthPart}-${randomPart}`;
+}
+
+const DEFAULT_RENT = 4500;
+const DEFAULT_WATER_RATE_PER_UNIT = 22;
+const DEFAULT_ELECTRIC_RATE_PER_UNIT = 8;
+
+async function getCurrentRoomRatesRow() {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(roomRatesTable)
+    .orderBy(desc(roomRatesTable.updatedAt), desc(roomRatesTable.effectiveFrom))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+function mapRoomRates(row) {
+  return {
+    waterPerUnit: toNumber(row?.waterPerUnit) || DEFAULT_WATER_RATE_PER_UNIT,
+    electricPerUnit: toNumber(row?.electricPerUnit) || DEFAULT_ELECTRIC_RATE_PER_UNIT,
+    effectiveFrom: row?.effectiveFrom ?? new Date().toISOString().slice(0, 10),
+  };
+}
+
 function normalizeSlipUrl(value) {
   const normalized = String(value ?? "").trim();
   if (!normalized) {
@@ -50,6 +99,11 @@ function normalizeSlipUrl(value) {
   }
 
   return "uploaded";
+}
+
+function normalizeSlipData(value) {
+  const normalized = String(value ?? "").trim();
+  return normalized || null;
 }
 
 function toDateOnly(value) {
@@ -211,7 +265,7 @@ export async function getDashboardByRoleFromDb(role, user) {
         studentId: item.studentId,
         amount: toNumber(item.amount),
         note: item.note ?? "",
-        slipUrl: item.slipUrl ?? "",
+        slipUrl: item.slipData ?? item.slipUrl ?? "",
         slipFileName: item.slipFileName ?? "Slip image",
         submittedAt: toIsoDate(item.submittedAt),
         status: item.status,
@@ -283,7 +337,7 @@ export async function getDashboardByRoleFromDb(role, user) {
             amount: toNumber(item.amount),
             status: item.status,
             note: item.note ?? "",
-            slip: item.slipUrl,
+            slip: item.slipData ?? item.slipUrl,
             slipFileName: item.slipFileName ?? "Slip image",
             rejectReason: item.rejectReason ?? "",
             submittedAt: toIsoDate(item.submittedAt),
@@ -308,16 +362,52 @@ export async function getDashboardByRoleFromDb(role, user) {
   }
 
   if (role === "staff") {
-    const readings = await db
+    const students = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+      })
+      .from(usersTable)
+      .where(and(eq(usersTable.role, "student"), eq(usersTable.isActive, 1)));
+
+    const studentById = new Map(students.map((item) => [item.id, item]));
+    const occupantByRoomId = new Map(
+      Array.from(roomMap.entries()).map(([studentId, currentRoom]) => [currentRoom.roomId, studentById.get(studentId)]),
+    );
+
+    const occupiedRoomIds = new Set(Array.from(roomMap.values()).map((item) => item.roomId));
+
+    const readings = (await db
       .select()
       .from(meterReadingsTable)
-      .orderBy(desc(meterReadingsTable.recordedAt));
+      .orderBy(desc(meterReadingsTable.recordedAt)))
+      .filter((item) => occupiedRoomIds.has(item.roomId));
+
+    const roomOptions = new Set();
+    totalRoomsResult.forEach((item) => {
+      if (item?.id) {
+        roomOptions.add(item.id);
+      }
+    });
+    Array.from(roomMap.values()).forEach((item) => {
+      if (item?.roomId) {
+        roomOptions.add(item.roomId);
+      }
+    });
+    readings.forEach((item) => {
+      if (item?.roomId) {
+        roomOptions.add(item.roomId);
+      }
+    });
 
     return {
       ...common,
+      roomOptions: Array.from(roomOptions).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })),
       rows: readings.map((item) => ({
         id: item.id,
         roomId: item.roomId,
+        studentId: occupantByRoomId.get(item.roomId)?.id ?? "-",
+        studentUsername: occupantByRoomId.get(item.roomId)?.username ?? "-",
         month: item.month,
         waterUsage: toNumber(item.waterCurrent) - toNumber(item.waterPrevious),
         electricUsage: toNumber(item.electricCurrent) - toNumber(item.electricPrevious),
@@ -390,7 +480,8 @@ export async function createPaymentSubmissionInDb(payload, user) {
     studentId: user.id,
     amount: Number(payload.amount),
     note: payload.note ?? "",
-    slipUrl: normalizeSlipUrl(payload.slipUrl),
+    slipData: normalizeSlipData(payload.slipData),
+    slipUrl: payload.slipUrl ? normalizeSlipUrl(payload.slipUrl) : null,
     slipFileName: payload.slipFileName ?? "uploaded-slip",
     submittedAt: now,
     status: "pending",
@@ -421,7 +512,7 @@ export async function listPendingPaymentsFromDb() {
     studentId: item.studentId,
     amount: toNumber(item.amount),
     note: item.note ?? "",
-    slipUrl: item.slipUrl ?? "",
+    slipUrl: item.slipData ?? item.slipUrl ?? "",
     slipFileName: item.slipFileName ?? "Slip image",
     submittedAt: toIsoDate(item.submittedAt),
     status: item.status,
@@ -479,7 +570,7 @@ export async function decidePaymentInDb(paymentId, status, reviewerId, rejectRea
     studentId: updated.studentId,
     amount: toNumber(updated.amount),
     note: updated.note ?? "",
-    slipUrl: updated.slipUrl ?? "",
+    slipUrl: updated.slipData ?? updated.slipUrl ?? "",
     slipFileName: updated.slipFileName ?? "Slip image",
     submittedAt: toIsoDate(updated.submittedAt),
     status: updated.status,
@@ -487,6 +578,383 @@ export async function decidePaymentInDb(paymentId, status, reviewerId, rejectRea
     rejectReason: updated.rejectReason ?? "",
     reviewedAt: toIsoDate(updated.reviewedAt),
   };
+}
+
+export async function saveMeterReadingInDb(payload, user) {
+  const db = getDb();
+  const now = new Date();
+  const month = normalizeBillingMonth(payload.month);
+
+  const existingRows = await db
+    .select({ id: meterReadingsTable.id })
+    .from(meterReadingsTable)
+    .where(and(eq(meterReadingsTable.roomId, payload.roomId), eq(meterReadingsTable.month, month)))
+    .limit(1);
+
+  const existing = existingRows[0];
+
+  if (existing) {
+    await db
+      .update(meterReadingsTable)
+      .set({
+        waterPrevious: Number(payload.waterPrevious),
+        waterCurrent: Number(payload.waterCurrent),
+        electricPrevious: Number(payload.electricPrevious),
+        electricCurrent: Number(payload.electricCurrent),
+        recordedBy: user.id,
+        recordedAt: now,
+      })
+      .where(eq(meterReadingsTable.id, existing.id));
+
+    return {
+      id: existing.id,
+      roomId: payload.roomId,
+      month,
+      waterPrevious: toNumber(payload.waterPrevious),
+      waterCurrent: toNumber(payload.waterCurrent),
+      electricPrevious: toNumber(payload.electricPrevious),
+      electricCurrent: toNumber(payload.electricCurrent),
+      recordedBy: user.id,
+      recordedAt: now.toISOString(),
+    };
+  }
+
+  const reading = {
+    id: createMeterReadingId(),
+    roomId: payload.roomId,
+    month,
+    waterPrevious: Number(payload.waterPrevious),
+    waterCurrent: Number(payload.waterCurrent),
+    electricPrevious: Number(payload.electricPrevious),
+    electricCurrent: Number(payload.electricCurrent),
+    recordedBy: user.id,
+    recordedAt: now,
+  };
+
+  await db.insert(meterReadingsTable).values(reading);
+
+  return {
+    ...reading,
+    waterPrevious: toNumber(reading.waterPrevious),
+    waterCurrent: toNumber(reading.waterCurrent),
+    electricPrevious: toNumber(reading.electricPrevious),
+    electricCurrent: toNumber(reading.electricCurrent),
+    recordedAt: reading.recordedAt.toISOString(),
+  };
+}
+
+export async function upsertInvoiceFromMeterReadingInDb(reading) {
+  const db = getDb();
+
+  const openHousingRows = await db
+    .select({ studentId: housingRecordsTable.studentId })
+    .from(housingRecordsTable)
+    .where(and(eq(housingRecordsTable.roomId, reading.roomId), isNull(housingRecordsTable.checkOutDate)))
+    .orderBy(desc(housingRecordsTable.checkInDate))
+    .limit(1);
+
+  const occupant = openHousingRows[0];
+  if (!occupant) {
+    return null;
+  }
+
+  const usageWater = Math.max(0, toNumber(reading.waterCurrent) - toNumber(reading.waterPrevious));
+  const usageElectric = Math.max(0, toNumber(reading.electricCurrent) - toNumber(reading.electricPrevious));
+
+  const latestInvoiceRows = await db
+    .select({ rent: invoicesTable.rent })
+    .from(invoicesTable)
+    .where(eq(invoicesTable.studentId, occupant.studentId))
+    .orderBy(desc(invoicesTable.month), desc(invoicesTable.createdAt))
+    .limit(1);
+
+  const currentRates = mapRoomRates(await getCurrentRoomRatesRow());
+
+  const roomRent = toNumber(getRoomMeta(reading.roomId)?.monthlyPrice);
+  const baseRent = toNumber(latestInvoiceRows[0]?.rent) || roomRent || DEFAULT_RENT;
+  const waterCharge = usageWater * currentRates.waterPerUnit;
+  const electricityCharge = usageElectric * currentRates.electricPerUnit;
+  const total = baseRent + waterCharge + electricityCharge;
+
+  const existingRows = await db
+    .select()
+    .from(invoicesTable)
+    .where(and(eq(invoicesTable.studentId, occupant.studentId), eq(invoicesTable.month, reading.month)))
+    .limit(1);
+
+  const existing = existingRows[0];
+  const now = new Date();
+
+  if (existing) {
+    await db
+      .update(invoicesTable)
+      .set({
+        roomId: reading.roomId,
+        rent: baseRent,
+        water: waterCharge,
+        electricity: electricityCharge,
+        total,
+        updatedAt: now,
+      })
+      .where(eq(invoicesTable.id, existing.id));
+
+    return {
+      id: existing.id,
+      studentId: existing.studentId,
+      roomId: reading.roomId,
+      month: reading.month,
+      rent: baseRent,
+      water: waterCharge,
+      electricity: electricityCharge,
+      total,
+      status: existing.status,
+    };
+  }
+
+  const invoice = {
+    id: createInvoiceId(reading.month),
+    studentId: occupant.studentId,
+    roomId: reading.roomId,
+    month: reading.month,
+    rent: baseRent,
+    water: waterCharge,
+    electricity: electricityCharge,
+    total,
+    status: "pending",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await db.insert(invoicesTable).values(invoice);
+
+  return {
+    ...invoice,
+    rent: toNumber(invoice.rent),
+    water: toNumber(invoice.water),
+    electricity: toNumber(invoice.electricity),
+    total: toNumber(invoice.total),
+  };
+}
+
+export async function getRoomRatesFromDb() {
+  return mapRoomRates(await getCurrentRoomRatesRow());
+}
+
+export async function addAuditLogInDb(actorId, action, targetType, targetId, detail) {
+  const db = getDb();
+  const now = new Date();
+
+  await db.insert(auditLogsTable).values({
+    actorId,
+    action,
+    targetType: targetType ?? null,
+    targetId: targetId ?? null,
+    detail: { message: String(detail ?? "") },
+    createdAt: now,
+  });
+
+  return {
+    actorId,
+    action,
+    targetType: targetType ?? null,
+    targetId: targetId ?? null,
+    detail: String(detail ?? ""),
+    createdAt: now.toISOString(),
+  };
+}
+
+export async function listAuditLogsFromDb(limit = 50) {
+  const db = getDb();
+  const [logs, users] = await Promise.all([
+    db
+      .select()
+      .from(auditLogsTable)
+      .orderBy(desc(auditLogsTable.createdAt), desc(auditLogsTable.id))
+      .limit(limit),
+    db.select({ id: usersTable.id, name: usersTable.name }).from(usersTable),
+  ]);
+
+  const userMap = new Map(users.map((item) => [item.id, item.name]));
+
+  return logs.map((log) => ({
+    id: String(log.id),
+    actorId: log.actorId,
+    actorName: userMap.get(log.actorId) ?? log.actorId,
+    action: log.action,
+    targetType: log.targetType ?? "",
+    targetId: log.targetId ?? "",
+    detail: typeof log.detail === "object" && log.detail !== null
+      ? String(log.detail.message ?? JSON.stringify(log.detail))
+      : String(log.detail ?? ""),
+    createdAt: toIsoDate(log.createdAt),
+  }));
+}
+
+export async function listMaintenanceRequestsFromDb(filterStudentId = null) {
+  const db = getDb();
+  let query = db
+    .select()
+    .from(maintenanceRequestsTable)
+    .orderBy(desc(maintenanceRequestsTable.createdAt), desc(maintenanceRequestsTable.id));
+
+  if (filterStudentId) {
+    query = query.where(eq(maintenanceRequestsTable.studentId, filterStudentId));
+  }
+
+  const [requests, users] = await Promise.all([
+    query,
+    db.select({ id: usersTable.id, name: usersTable.name }).from(usersTable),
+  ]);
+
+  const userMap = new Map(users.map((item) => [item.id, item.name]));
+
+  return requests.map((item) => ({
+    id: String(item.id),
+    studentId: item.studentId,
+    roomId: item.roomId,
+    title: item.title,
+    description: item.description ?? "",
+    status: item.status,
+    assignedTo: item.assignedTo,
+    assignedToName: item.assignedTo ? (userMap.get(item.assignedTo) ?? null) : null,
+    studentName: userMap.get(item.studentId) ?? "Unknown",
+    createdAt: toIsoDate(item.createdAt),
+    updatedAt: toIsoDate(item.updatedAt),
+    resolvedAt: toIsoDate(item.resolvedAt),
+  }));
+}
+
+export async function createMaintenanceRequestInDb({ studentId, roomId, title, description }) {
+  const db = getDb();
+  const [studentRows, openHousingRows] = await Promise.all([
+    db.select().from(usersTable).where(eq(usersTable.id, studentId)).limit(1),
+    db
+      .select({ roomId: housingRecordsTable.roomId })
+      .from(housingRecordsTable)
+      .where(and(eq(housingRecordsTable.studentId, studentId), isNull(housingRecordsTable.checkOutDate)))
+      .orderBy(desc(housingRecordsTable.checkInDate))
+      .limit(1),
+  ]);
+
+  const student = studentRows[0];
+  if (!student) {
+    throw new Error("student not found");
+  }
+
+  const resolvedRoomId = roomId ?? openHousingRows[0]?.roomId ?? null;
+  if (!resolvedRoomId) {
+    throw new Error("student room not found");
+  }
+
+  const now = new Date();
+  const [result] = await db.insert(maintenanceRequestsTable).values({
+    studentId,
+    roomId: resolvedRoomId,
+    title: String(title ?? "").trim(),
+    description: String(description ?? "").trim(),
+    status: "open",
+    assignedTo: null,
+    resolvedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return {
+    id: String(result.insertId),
+    studentId,
+    roomId: resolvedRoomId,
+    title: String(title ?? "").trim(),
+    description: String(description ?? "").trim(),
+    status: "open",
+    assignedTo: null,
+    assignedToName: null,
+    studentName: student.name,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+    resolvedAt: null,
+  };
+}
+
+export async function updateMaintenanceStatusInDb(id, status, staffId = null) {
+  const db = getDb();
+  const normalizedId = Number(id);
+  const rows = await db
+    .select()
+    .from(maintenanceRequestsTable)
+    .where(eq(maintenanceRequestsTable.id, normalizedId))
+    .limit(1);
+
+  const request = rows[0];
+  if (!request) {
+    throw new Error("maintenance request not found");
+  }
+
+  const resolvedAt = status === "resolved" ? new Date() : null;
+  await db
+    .update(maintenanceRequestsTable)
+    .set({
+      status,
+      assignedTo: staffId && status === "in_progress" ? staffId : request.assignedTo,
+      resolvedAt: status === "resolved" ? resolvedAt : request.resolvedAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(maintenanceRequestsTable.id, normalizedId));
+
+  const updatedRows = await db
+    .select()
+    .from(maintenanceRequestsTable)
+    .where(eq(maintenanceRequestsTable.id, normalizedId))
+    .limit(1);
+
+  const users = await db.select({ id: usersTable.id, name: usersTable.name }).from(usersTable);
+  const userMap = new Map(users.map((item) => [item.id, item.name]));
+  const updated = updatedRows[0];
+
+  return {
+    id: String(updated.id),
+    studentId: updated.studentId,
+    roomId: updated.roomId,
+    title: updated.title,
+    description: updated.description ?? "",
+    status: updated.status,
+    assignedTo: updated.assignedTo,
+    assignedToName: updated.assignedTo ? (userMap.get(updated.assignedTo) ?? null) : null,
+    studentName: userMap.get(updated.studentId) ?? "Unknown",
+    createdAt: toIsoDate(updated.createdAt),
+    updatedAt: toIsoDate(updated.updatedAt),
+    resolvedAt: toIsoDate(updated.resolvedAt),
+  };
+}
+
+export async function updateRoomRatesInDb(waterPerUnit, electricPerUnit, updatedBy) {
+  const db = getDb();
+  const now = new Date();
+  const effectiveFrom = now.toISOString().slice(0, 10);
+  const existing = await getCurrentRoomRatesRow();
+
+  if (existing) {
+    await db
+      .update(roomRatesTable)
+      .set({
+        waterPerUnit: Number(waterPerUnit),
+        electricPerUnit: Number(electricPerUnit),
+        effectiveFrom,
+        updatedBy,
+        updatedAt: now,
+      })
+      .where(eq(roomRatesTable.id, existing.id));
+  } else {
+    await db.insert(roomRatesTable).values({
+      id: 1,
+      waterPerUnit: Number(waterPerUnit),
+      electricPerUnit: Number(electricPerUnit),
+      effectiveFrom,
+      updatedBy,
+      updatedAt: now,
+    });
+  }
+
+  return mapRoomRates(await getCurrentRoomRatesRow());
 }
 
 export async function listUsersFromDb() {

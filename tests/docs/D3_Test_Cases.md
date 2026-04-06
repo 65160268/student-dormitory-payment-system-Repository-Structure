@@ -2,6 +2,8 @@
 
 เอกสารนี้สรุป test cases สำคัญจาก automated tests และใช้เป็นหลักฐานประกอบ D3 และงานนำเสนอ Final
 
+> Last verified: 2026-04-06 (`npm run test:coverage`)
+
 ## 1. Unit Test Coverage Areas
 
 | Suite | Focus Area | ตัวอย่างกรณีทดสอบ |

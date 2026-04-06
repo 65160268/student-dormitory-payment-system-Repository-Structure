@@ -1,6 +1,3 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import { NextResponse } from "next/server";
 
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
@@ -81,12 +78,8 @@ export async function POST(request) {
   const safeName = sanitizeBaseName(body.fileName);
   const fileName = `${Date.now()}-${safeName}.${parsed.extension}`;
 
-  const uploadDir = path.join(process.cwd(), "public", "slips");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, fileName), buffer);
-
   return NextResponse.json({
-    slipUrl: `/slips/${fileName}`,
+    slipData: body.dataUrl,
     slipFileName: body.fileName ?? fileName,
   });
 }

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
 import { decidePaymentData } from "@/lib/data-access";
 
-export async function POST(request, { params }) {
+export async function POST(request, context) {
   const token = request.cookies.get(getSessionCookieName())?.value;
   const user = getUserByToken(token);
 
@@ -29,7 +29,13 @@ export async function POST(request, { params }) {
     );
   }
 
-  const { paymentId } = params;
+  const resolvedParams = await context?.params;
+  const paymentId = String(resolvedParams?.paymentId ?? "").trim();
+
+  if (!paymentId) {
+    return NextResponse.json({ message: "paymentId is required" }, { status: 400 });
+  }
+
   const payment = await decidePaymentData(
     paymentId,
     body.status,

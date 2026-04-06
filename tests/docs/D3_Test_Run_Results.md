@@ -16,7 +16,7 @@ npm run test:coverage
 - Test suites: 14 passed, 14 total
 - Tests: 82 passed, 82 total
 - Snapshots: 0 total
-- Time: 3.027 s
+- Time: 5.033 s
 
 ## รายชื่อ test suites ที่ผ่าน
 
@@ -50,3 +50,4 @@ All files |   97.16 |    93.49 |     100 |   97.16 |
 - ผล test ล่าสุดผ่านทั้งหมด 100% ในแง่จำนวน test cases และ test suites
 - Coverage collection ถูกปรับแล้วและแสดงเปอร์เซ็นต์ได้ตามจริงใน terminal
 - สามารถใช้ค่าชุดนี้ใส่สไลด์ Testing&QA ได้ทันที
+- รอบนี้เป็นการรัน backend automated tests (`npm run test:coverage`) จาก root workspace

@@ -1,7 +1,9 @@
 import {
+  bigint,
   char,
   datetime,
   decimal,
+  json,
   mysqlEnum,
   mysqlTable,
   text,
@@ -32,6 +34,15 @@ export const housingRecordsTable = mysqlTable("housing_records", {
   checkInDate: char("check_in_date", { length: 10 }).notNull(),
   checkOutDate: char("check_out_date", { length: 10 }),
   createdAt: datetime("created_at"),
+});
+
+export const roomRatesTable = mysqlTable("room_rates", {
+  id: tinyint("id").primaryKey(),
+  waterPerUnit: decimal("water_per_unit", { precision: 8, scale: 2 }).notNull(),
+  electricPerUnit: decimal("electric_per_unit", { precision: 8, scale: 2 }).notNull(),
+  effectiveFrom: char("effective_from", { length: 10 }).notNull(),
+  updatedBy: varchar("updated_by", { length: 30 }),
+  updatedAt: datetime("updated_at"),
 });
 
 export const meterReadingsTable = mysqlTable("meter_readings", {
@@ -66,6 +77,7 @@ export const paymentsTable = mysqlTable("payments", {
   studentId: varchar("student_id", { length: 30 }).notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   note: text("note"),
+  slipData: text("slip_data", { length: "long" }),
   slipUrl: varchar("slip_url", { length: 500 }),
   slipFileName: varchar("slip_file_name", { length: 255 }),
   submittedAt: datetime("submitted_at"),
@@ -73,4 +85,27 @@ export const paymentsTable = mysqlTable("payments", {
   reviewerId: varchar("reviewer_id", { length: 30 }),
   rejectReason: text("reject_reason"),
   reviewedAt: datetime("reviewed_at"),
+});
+
+export const maintenanceRequestsTable = mysqlTable("maintenance_requests", {
+  id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
+  studentId: varchar("student_id", { length: 30 }).notNull(),
+  roomId: varchar("room_id", { length: 10 }).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["open", "in_progress", "resolved", "closed"]).notNull(),
+  assignedTo: varchar("assigned_to", { length: 30 }),
+  resolvedAt: datetime("resolved_at"),
+  createdAt: datetime("created_at"),
+  updatedAt: datetime("updated_at"),
+});
+
+export const auditLogsTable = mysqlTable("audit_logs", {
+  id: bigint("id", { mode: "number", unsigned: true }).autoincrement().primaryKey(),
+  actorId: varchar("actor_id", { length: 30 }).notNull(),
+  action: varchar("action", { length: 100 }).notNull(),
+  targetType: varchar("target_type", { length: 50 }),
+  targetId: varchar("target_id", { length: 50 }),
+  detail: json("detail"),
+  createdAt: datetime("created_at"),
 });

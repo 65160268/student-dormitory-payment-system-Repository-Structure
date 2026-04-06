@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
-import { getRoomRates, updateRoomRates, addAuditLog } from "@/lib/data-store";
+import { addAuditLogData, getRoomRatesData, updateRoomRatesData } from "@/lib/data-access";
 
 function getAdminUser(request) {
   const token = request.cookies.get(getSessionCookieName())?.value;
@@ -24,7 +24,7 @@ export async function GET(request) {
     return auth.error;
   }
 
-  return NextResponse.json({ rates: getRoomRates() });
+  return NextResponse.json({ rates: await getRoomRatesData() });
 }
 
 // POST /api/admin/rates
@@ -42,8 +42,8 @@ export async function POST(request) {
     return NextResponse.json({ message: "rates must be positive" }, { status: 400 });
   }
 
-  const rates = updateRoomRates(waterPerUnit, electricPerUnit);
-  addAuditLog(auth.user.id, "update_rates", "rate", "1",
+  const rates = await updateRoomRatesData(waterPerUnit, electricPerUnit, auth.user.id);
+  await addAuditLogData(auth.user.id, "update_rates", "rate", "1",
     `อัปเดตอัตราค่าน้ำ=${waterPerUnit}, ค่าไฟ=${electricPerUnit}`);
 
   return NextResponse.json({ rates });

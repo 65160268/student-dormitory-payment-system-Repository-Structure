@@ -22,7 +22,7 @@ export async function POST(request) {
     );
   }
 
-  if (!body.slipUrl) {
+  if (!body.slipData && !body.slipUrl) {
     return NextResponse.json(
       { message: "slip image is required" },
       { status: 400 },
@@ -41,6 +41,7 @@ export async function POST(request) {
   const payment = await createPaymentSubmissionData(
     {
       ...body,
+      slipData: body.slipData ?? body.slipUrl,
       amount: invoice.total,
     },
     user,

@@ -218,6 +218,10 @@ export function PortalClient({ user, dashboardData }) {
     () => new Date().toISOString().slice(0, 10),
     [],
   );
+  const currentMonthValue = useMemo(
+    () => new Date().toISOString().slice(0, 7),
+    [],
+  );
 
   const [invoiceId, setInvoiceId] = useState("INV-2026-030");
   const [amount, setAmount] = useState("5790");
@@ -229,10 +233,10 @@ export function PortalClient({ user, dashboardData }) {
 
   const [month, setMonth] = useState("2026-04");
   const [roomId, setRoomId] = useState("A-214");
-  const [waterPrevious, setWaterPrevious] = useState("1202");
-  const [waterCurrent, setWaterCurrent] = useState("1218");
-  const [electricPrevious, setElectricPrevious] = useState("5168");
-  const [electricCurrent, setElectricCurrent] = useState("5280");
+  const [waterPrevious, setWaterPrevious] = useState("");
+  const [waterCurrent, setWaterCurrent] = useState("");
+  const [electricPrevious, setElectricPrevious] = useState("");
+  const [electricCurrent, setElectricCurrent] = useState("");
   const [adminName, setAdminName] = useState("");
   const [adminUsername, setAdminUsername] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
@@ -313,15 +317,36 @@ export function PortalClient({ user, dashboardData }) {
       return [];
     }
 
-    const roomSet = new Set([roomId, "A-214", "A-101", "B-203", "C-305"]);
-    rows.forEach((item) => {
-      if (item?.roomId) {
-        roomSet.add(item.roomId);
-      }
-    });
+    const roomSet = new Set(Array.isArray(data?.roomOptions) ? data.roomOptions : []);
 
-    return Array.from(roomSet).sort();
-  }, [roomId, rows, user.role]);
+    if (!roomSet.size) {
+      rows.forEach((item) => {
+        if (item?.roomId) {
+          roomSet.add(item.roomId);
+        }
+      });
+    }
+
+    if (roomId) {
+      roomSet.add(roomId);
+    }
+
+    return Array.from(roomSet).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+  }, [data?.roomOptions, roomId, rows, user.role]);
+
+  useEffect(() => {
+    if (user.role !== "staff") {
+      return;
+    }
+
+    if (!staffRoomOptions.length) {
+      return;
+    }
+
+    if (!staffRoomOptions.includes(roomId)) {
+      setRoomId(staffRoomOptions[0]);
+    }
+  }, [roomId, staffRoomOptions, user.role]);
   const currentStudentInvoice = useMemo(() => {
     if (user.role !== "student") {
       return null;
@@ -778,7 +803,7 @@ export function PortalClient({ user, dashboardData }) {
       return {
         title: "Meter Operations",
         description: "Recorded utility usage by room and month.",
-        columns: ["roomId", "month", "waterUsage", "electricUsage", "recordedAt"],
+        columns: ["roomId", "studentId", "studentUsername", "month", "waterUsage", "electricUsage", "recordedAt"],
       };
     }
 
@@ -942,7 +967,7 @@ export function PortalClient({ user, dashboardData }) {
           invoiceId: currentStudentInvoice.id ?? currentStudentInvoice.invoiceId,
           amount: Number(currentStudentInvoice.amount ?? amount),
           note,
-          slipUrl: uploadPayload.slipUrl,
+          slipData: uploadPayload.slipData,
           slipFileName: uploadPayload.slipFileName ?? slipFileName,
         }),
       });
@@ -961,7 +986,7 @@ export function PortalClient({ user, dashboardData }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           roomId,
-          month: currentDateValue,
+          month: currentMonthValue,
           waterPrevious: Number(waterPrevious),
           waterCurrent: Number(waterCurrent),
           electricPrevious: Number(electricPrevious),
@@ -1896,11 +1921,8 @@ export function PortalClient({ user, dashboardData }) {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="month">วันที่บันทึก (YYYY-MM-DD)</Label>
-                  <Input id="month" value={currentDateValue} readOnly />
-                </div>
-                <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-                  ไฟ หน่วยละ 5 บาท | น้ำ หน่วยละ 25 บาท
+                  <Label htmlFor="month">รอบบิล (YYYY-MM)</Label>
+                  <Input id="month" value={currentMonthValue} readOnly />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">

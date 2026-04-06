@@ -1,38 +1,31 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
-  users,
-  listMaintenanceRequests,
-  createMaintenanceRequest,
-  updateMaintenanceStatus,
-} from "@/lib/data-store";
+  createMaintenanceRequestData,
+  listMaintenanceRequestsData,
+  updateMaintenanceStatusData,
+} from "@/lib/data-access";
+import { getSessionCookieName, getUserByToken } from "@/lib/auth";
 
-function getSessionUser() {
-  const store = cookies();
-  const raw = store.get("dorm_session")?.value;
-  if (!raw) return null;
-  try {
-    return JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
-  } catch {
-    return null;
-  }
+function getSessionUser(request) {
+  const token = request.cookies.get(getSessionCookieName())?.value;
+  return getUserByToken(token);
 }
 
 // GET /api/maintenance  — student sees own, staff/finance/admin see all
-export async function GET() {
-  const session = getSessionUser();
+export async function GET(request) {
+  const session = getSessionUser(request);
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const studentFilter = session.role === "student" ? session.id : null;
-  const list = listMaintenanceRequests(studentFilter);
+  const list = await listMaintenanceRequestsData(studentFilter);
   return NextResponse.json({ maintenance: list });
 }
 
 // POST /api/maintenance  — student creates request
 export async function POST(request) {
-  const session = getSessionUser();
+  const session = getSessionUser(request);
   if (!session || session.role !== "student") {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
@@ -44,19 +37,23 @@ export async function POST(request) {
     return NextResponse.json({ message: "title is required" }, { status: 400 });
   }
 
-  const req = createMaintenanceRequest({
-    studentId: session.id,
-    roomId: session.roomId,
-    title,
-    description,
-  });
+  try {
+    const req = await createMaintenanceRequestData({
+      studentId: session.id,
+      roomId: session.roomId,
+      title,
+      description,
+    });
 
-  return NextResponse.json({ maintenance: req }, { status: 201 });
+    return NextResponse.json({ maintenance: req }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ message: error.message ?? "unable to create maintenance request" }, { status: 500 });
+  }
 }
 
 // PATCH /api/maintenance  — staff updates status
 export async function PATCH(request) {
-  const session = getSessionUser();
+  const session = getSessionUser(request);
   if (!session || !["staff", "admin"].includes(session.role)) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
@@ -71,6 +68,10 @@ export async function PATCH(request) {
     return NextResponse.json({ message: "invalid status" }, { status: 400 });
   }
 
-  const updated = updateMaintenanceStatus(id, status, session.id);
-  return NextResponse.json({ maintenance: updated });
+  try {
+    const updated = await updateMaintenanceStatusData(id, status, session.id);
+    return NextResponse.json({ maintenance: updated });
+  } catch (error) {
+    return NextResponse.json({ message: error.message ?? "unable to update maintenance request" }, { status: 500 });
+  }
 }

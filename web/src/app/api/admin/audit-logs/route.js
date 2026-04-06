@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionCookieName, getUserByToken } from "@/lib/auth";
-import { listAuditLogs } from "@/lib/data-store";
+import { listAuditLogsData } from "@/lib/data-access";
 
 function getAdminOrManagerUser(request) {
   const token = request.cookies.get(getSessionCookieName())?.value;
@@ -24,6 +24,6 @@ export async function GET(request) {
     return auth.error;
   }
 
-  const logs = listAuditLogs(100);
+  const logs = await listAuditLogsData(100);
   return NextResponse.json({ logs });
 }
