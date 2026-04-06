@@ -59,13 +59,13 @@
 - เอกสาร D1-D4 ถูกใช้ควบคู่กับ implementation และ test artifacts
 
 ### Code Quality Metrics
-- Automated test suites: 12 suites
-- Automated test cases: 59 cases
+- Automated test suites: 14 suites
+- Automated test cases: 82 cases
 - Coverage:
-  - Statements: 88.10%
-  - Branches: 76.92%
-  - Functions: 90.00%
-  - Lines: 87.99%
+  - Statements: 97.16%
+  - Branches: 93.49%
+  - Functions: 100.00%
+  - Lines: 97.16%
 
 ### Key Achievements
 - มี role-based portal ครบหลายบทบาท
@@ -76,13 +76,15 @@
 ## 5. Testing & Quality Assurance
 
 ### Test Coverage
-- Unit tests: 30 เคส
-- Integration tests: 29 เคส
+- Unit tests: 56 เคส
+- Integration tests: 26 เคส
 - UAT scenarios: 5 เคส ผ่านทั้งหมด
 
 ### Quality Results
 - ครอบคลุม auth, authorization, invoice, payment, room และ meter workflow
 - มี coverage report สำหรับใช้ยืนยันคุณภาพเชิงตัวเลข
+- Test Suites: 14 Passed
+- Tests: 82 Passed
 
 ### Security Assessment Summary
 - จุดแข็ง: RBAC, protected routes, bcrypt support, httpOnly cookie, Dockerized deployment

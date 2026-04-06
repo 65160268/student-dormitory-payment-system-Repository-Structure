@@ -72,7 +72,7 @@
 * **Week 6-7 (D2 Due):** Design Phase (Architecture, Code Skeleton, Sprint Plan)
 * **Week 9-10 (D3 Due):** Testing & CI/CD (Test Plan, CI/CD Config, Unit Tests)
 * **Week 11-13 (D4 Due):** Quality & Security (OWASP Top 10, Performance Plan)
-* **Week 14-15 (D5 Final):** Release Notes, Final Presentation & Live Demo
+* **Week 14-15 (Final):** Release Notes, Final Presentation & Live Demo
 
 ---
 

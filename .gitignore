@@ -14,6 +14,8 @@ node_modules/
 /coverage
 coverage/
 tests/**/coverage/
+!tests/docs/coverage-reports/
+!tests/docs/coverage-reports/**
 
 # next.js
 /.next/

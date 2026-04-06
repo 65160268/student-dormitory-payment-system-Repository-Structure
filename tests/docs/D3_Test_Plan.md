@@ -35,13 +35,13 @@
 ### Unit Testing
 - เครื่องมือ: Jest
 - จุดเน้น: business logic ระดับ service, การ map error, และการคำนวณ
-- จำนวนที่มีอยู่จริง: 30 test cases ใน 6 unit test suites
+- จำนวนที่มีอยู่จริง: 56 test cases ใน 8 unit test suites
 - เป้าหมาย coverage: 80% ขึ้นไป
 
 ### Integration Testing
 - เครื่องมือ: Jest + Supertest
 - จุดเน้น: การทำงานร่วมกันของ route + middleware + controller + service
-- จำนวนที่มีอยู่จริง: 29 test cases ใน 6 integration test suites
+- จำนวนที่มีอยู่จริง: 26 test cases ใน 6 integration test suites
 - ครอบคลุม: auth flow, role-based access control, payload validation, และ workflow หลัก
 
 ### System Testing (API Workflow)
@@ -53,13 +53,13 @@
 - จำนวนสถานการณ์: 3-5 สถานการณ์ พร้อมผลลัพธ์ที่คาดหวังและการลงนามรับรอง
 
 ## 3.1 Current Quality Evidence
-- Automated test suites ทั้งหมด: 12 suites
-- Automated test cases ทั้งหมด: 59 cases
+- Automated test suites ทั้งหมด: 14 suites
+- Automated test cases ทั้งหมด: 82 cases
 - Coverage (Jest report):
-	- Statements: 88.10% (363/412)
-	- Branches: 76.92% (120/156)
-	- Functions: 90.00% (36/40)
-	- Lines: 87.99% (359/408)
+	- Statements: 97.16% (308/317)
+	- Branches: 93.49% (115/123)
+	- Functions: 100.00% (36/36)
+	- Lines: 97.16% (308/317)
 - UAT scenarios: 5 สถานการณ์ และผ่านทั้งหมด
 
 ## 4. สภาพแวดล้อมการทดสอบ
